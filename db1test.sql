@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Apr 28, 2023 at 05:18 PM
+-- Generation Time: May 01, 2023 at 03:47 PM
 -- Server version: 10.4.28-MariaDB
 -- PHP Version: 8.2.4
 
@@ -39,28 +39,21 @@ CREATE TABLE `author` (
 --
 
 CREATE TABLE `book` (
+  `ISBN` varchar(20) NOT NULL,
   `title` varchar(50) NOT NULL,
-  `ISBN` bigint(20) NOT NULL,
-  `author` varchar(50) NOT NULL,
+  `edition` varchar(50) NOT NULL,
+  `author1` int(11) NOT NULL,
+  `author2` int(11) NOT NULL,
+  `author3` int(11) NOT NULL,
   `no_pages` int(11) NOT NULL,
-  `publisher_id` varchar(255) NOT NULL,
+  `publisher_id` int(11) NOT NULL,
   `summary` longtext NOT NULL,
-  `available` int(11) NOT NULL,
-  `image` longblob NOT NULL,
-  `category` int(11) NOT NULL,
+  `image` varchar(255) NOT NULL,
+  `category1` int(11) NOT NULL,
+  `category2` int(11) NOT NULL,
+  `category3` int(11) NOT NULL,
   `language` varchar(40) NOT NULL,
   `key-words` varchar(70) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `book_author`
---
-
-CREATE TABLE `book_author` (
-  `book_id` int(11) NOT NULL,
-  `author_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -72,8 +65,7 @@ CREATE TABLE `book_author` (
 CREATE TABLE `book_copy` (
   `copy_id` int(11) NOT NULL,
   `year_published` year(4) NOT NULL,
-  `book_id` bigint(20) NOT NULL,
-  `publisher_id` int(11) NOT NULL,
+  `book_id` varchar(20) NOT NULL,
   `dewey_code` varchar(8) NOT NULL,
   `school_id` varchar(60) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -192,10 +184,23 @@ CREATE TABLE `user` (
   `user_id` int(11) NOT NULL,
   `first_name` varchar(255) NOT NULL,
   `surname` varchar(255) NOT NULL,
+  `username` varchar(50) NOT NULL,
+  `birth_date` date NOT NULL,
   `email` varchar(255) NOT NULL,
-  `status` varchar(10) NOT NULL,
-  `role` enum('admin','school-admin','teacher','student') NOT NULL
+  `school_id` varchar(60) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
+  `status` enum('active','inactive','deleted') NOT NULL,
+  `role` enum('admin','school-admin','teacher','student') NOT NULL,
+  `profile` varchar(255) NOT NULL,
+  `barcode` varchar(20) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `user`
+--
+
+INSERT INTO `user` (`user_id`, `first_name`, `surname`, `username`, `birth_date`, `email`, `school_id`, `status`, `role`, `profile`, `barcode`) VALUES
+(1, 'Μάριος', 'Ρόζος', 'mario_rz', '2002-12-06', 'mariosrizzler@gmail.com', '27ο Δημοτικό Σχολείο Ιωαννίνων', 'active', 'school-admin', 'https://i.insider.com/602ee9ced3ad27001837f2ac?width=1000&format=jpeg&auto=webp', ''),
+(42, 'Κωστής', 'Κατσικόπουλος', 'kkat', '2002-06-15', 'kkatgm@gmail.com', '27ο Δημοτικό Σχολείο Ιωαννίνων', 'active', 'teacher', 'https://i.pinimg.com/236x/fb/d8/b5/fbd8b5d1c92c46e94e092ecc284a41da.jpg', '69421739');
 
 --
 -- Indexes for dumped tables
@@ -212,20 +217,19 @@ ALTER TABLE `author`
 --
 ALTER TABLE `book`
   ADD PRIMARY KEY (`ISBN`),
-  ADD KEY `ForeignKey` (`category`);
-
---
--- Indexes for table `book_author`
---
-ALTER TABLE `book_author`
-  ADD PRIMARY KEY (`book_id`,`author_id`);
+  ADD KEY `FK_AUTHOR1` (`author1`),
+  ADD KEY `FK_AUTHOR2` (`author2`),
+  ADD KEY `FK_AUTHOR3` (`author3`),
+  ADD KEY `FK_PUBLISHER` (`publisher_id`),
+  ADD KEY `FK_CATEGORY1` (`category1`),
+  ADD KEY `FK_CATEGORY2` (`category2`),
+  ADD KEY `FK_CATEGORY3` (`category3`);
 
 --
 -- Indexes for table `book_copy`
 --
 ALTER TABLE `book_copy`
   ADD PRIMARY KEY (`copy_id`),
-  ADD KEY `Copy_Publisher` (`publisher_id`),
   ADD KEY `FK_SCHOOL_ID` (`school_id`),
   ADD KEY `FK_ISBN` (`book_id`);
 
@@ -248,7 +252,8 @@ ALTER TABLE `checkout`
 --
 ALTER TABLE `hold`
   ADD PRIMARY KEY (`hold_id`),
-  ADD KEY `FK_HOLD_BID` (`book_id`);
+  ADD KEY `FK_HOLD_BID` (`book_id`),
+  ADD KEY `FK_UID` (`user_id`);
 
 --
 -- Indexes for table `publisher`
@@ -260,7 +265,8 @@ ALTER TABLE `publisher`
 -- Indexes for table `pwd`
 --
 ALTER TABLE `pwd`
-  ADD PRIMARY KEY (`pwd_id`);
+  ADD PRIMARY KEY (`pwd_id`),
+  ADD KEY `FK_PWD_USER_ID` (`user_id`);
 
 --
 -- Indexes for table `review`
@@ -280,7 +286,8 @@ ALTER TABLE `school`
 -- Indexes for table `user`
 --
 ALTER TABLE `user`
-  ADD PRIMARY KEY (`user_id`);
+  ADD PRIMARY KEY (`user_id`),
+  ADD KEY `FK_SCH_ID` (`school_id`);
 
 --
 -- Constraints for dumped tables
@@ -290,7 +297,13 @@ ALTER TABLE `user`
 -- Constraints for table `book`
 --
 ALTER TABLE `book`
-  ADD CONSTRAINT `ForeignKey` FOREIGN KEY (`category`) REFERENCES `category` (`id`);
+  ADD CONSTRAINT `FK_AUTHOR1` FOREIGN KEY (`author1`) REFERENCES `author` (`id`),
+  ADD CONSTRAINT `FK_AUTHOR2` FOREIGN KEY (`author2`) REFERENCES `author` (`id`),
+  ADD CONSTRAINT `FK_AUTHOR3` FOREIGN KEY (`author3`) REFERENCES `author` (`id`),
+  ADD CONSTRAINT `FK_CATEGORY1` FOREIGN KEY (`category1`) REFERENCES `category` (`id`),
+  ADD CONSTRAINT `FK_CATEGORY2` FOREIGN KEY (`category2`) REFERENCES `category` (`id`),
+  ADD CONSTRAINT `FK_CATEGORY3` FOREIGN KEY (`category3`) REFERENCES `category` (`id`),
+  ADD CONSTRAINT `FK_PUBLISHER` FOREIGN KEY (`publisher_id`) REFERENCES `publisher` (`publisher_id`);
 
 --
 -- Constraints for table `book_copy`
@@ -310,20 +323,26 @@ ALTER TABLE `checkout`
 -- Constraints for table `hold`
 --
 ALTER TABLE `hold`
-  ADD CONSTRAINT `FK_HOLD_BID` FOREIGN KEY (`book_id`) REFERENCES `book_copy` (`copy_id`);
+  ADD CONSTRAINT `FK_HOLD_BID` FOREIGN KEY (`book_id`) REFERENCES `book_copy` (`copy_id`),
+  ADD CONSTRAINT `FK_UID` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`);
 
 --
 -- Constraints for table `pwd`
 --
 ALTER TABLE `pwd`
-  ADD CONSTRAINT `FK_PWD_USER_ID` FOREIGN KEY (`pwd_id`) REFERENCES `user` (`user_id`);
+  ADD CONSTRAINT `FK_PWD_USER_ID` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`);
 
 --
 -- Constraints for table `review`
 --
 ALTER TABLE `review`
-  ADD CONSTRAINT `FK_REVIEW_BOOK` FOREIGN KEY (`book_id`) REFERENCES `book` (`title`),
   ADD CONSTRAINT `FK_REVIEW_USER` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`);
+
+--
+-- Constraints for table `user`
+--
+ALTER TABLE `user`
+  ADD CONSTRAINT `FK_SCH_ID` FOREIGN KEY (`school_id`) REFERENCES `school` (`school_id`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
