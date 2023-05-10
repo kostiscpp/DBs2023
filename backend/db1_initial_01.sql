@@ -25,7 +25,7 @@ DELIMITER $$
 --
 -- Procedures
 --
-CREATE DEFINER=`root`@`localhost` PROCEDURE `AddBook` (IN `ISBN` VARCHAR(20), IN `title` VARCHAR(50), IN `author_name` VARCHAR(255), IN `publisher_name` VARCHAR(255), IN `year_published` YEAR(4), IN `category_name` VARCHAR(255), IN `school_id` INT(11))   BEGIN
+CREATE DEFINER=`root`@`localhost` PROCEDURE `AddBook` (IN `ISBN` VARCHAR(20), IN `title` VARCHAR(255), IN `author_name` VARCHAR(255), IN `publisher_name` VARCHAR(255), IN `year_published` YEAR(4), IN `category_name` VARCHAR(255), IN `school_id` INT(11))   BEGIN
     DECLARE P_ID,C_ID,A_ID,V_COUNT INT DEFAULT 0;
     
     select count(*) from publisher where name=publisher_name INTO V_COUNT;
@@ -61,8 +61,8 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `AddBook` (IN `ISBN` VARCHAR(20), IN
     INSERT IGNORE INTO book_to_category (ISBN, category_id) 
     VALUES(ISBN, C_ID);
     
-    INSERT INTO book_copy (year_published, book_id, dewey_code, school_id)
-    VALUES(year_published, ISBN, '_', school_id);
+    INSERT INTO book_copy (book_id, dewey_code, school_id)
+    VALUES(ISBN, '_', school_id);
 
 END$$
 
@@ -87,7 +87,7 @@ CREATE TABLE `author` (
 
 CREATE TABLE `book` (
   `ISBN` varchar(20) NOT NULL,
-  `title` varchar(50) NOT NULL,
+  `title` varchar(255) NOT NULL,
   `edition` varchar(50) NOT NULL DEFAULT 'X.0',
   `no_pages` int(11) NOT NULL,
   `publisher_id` int(11) NOT NULL,
@@ -355,19 +355,19 @@ ALTER TABLE `user`
 -- AUTO_INCREMENT for table `author`
 --
 ALTER TABLE `author`
-  MODIFY `author_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `author_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `book_copy`
 --
 ALTER TABLE `book_copy`
-  MODIFY `copy_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `copy_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `category`
 --
 ALTER TABLE `category`
-  MODIFY `category_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `category_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `checkout`
@@ -385,7 +385,7 @@ ALTER TABLE `hold`
 -- AUTO_INCREMENT for table `publisher`
 --
 ALTER TABLE `publisher`
-  MODIFY `publisher_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `publisher_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `pwd`
@@ -403,13 +403,13 @@ ALTER TABLE `review`
 -- AUTO_INCREMENT for table `school`
 --
 ALTER TABLE `school`
-  MODIFY `school_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `school_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `user`
 --
 ALTER TABLE `user`
-  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- Constraints for dumped tables
