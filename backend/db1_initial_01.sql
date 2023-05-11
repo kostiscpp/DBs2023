@@ -25,7 +25,8 @@ DELIMITER $$
 --
 -- Procedures
 --
-CREATE DEFINER=`root`@`localhost` PROCEDURE `AddBook` (IN `book_ISBN` VARCHAR(20), IN `title` VARCHAR(255), IN `author_name` VARCHAR(255), IN `publisher_name` VARCHAR(255), IN `year_published` YEAR(4), IN `category_name` VARCHAR(255), IN `school_id` INT(11))   BEGIN
+CREATE DEFINER=`root`@`localhost` 
+PROCEDURE `AddBook` (IN `book_ISBN` VARCHAR(20), IN `title` VARCHAR(255), IN `author_name` VARCHAR(255), IN `publisher_name` VARCHAR(255), IN `year_published` YEAR(4), IN `category_name` VARCHAR(255), IN `school_id` INT(11))   BEGIN
     DECLARE P_ID,C_ID,A_ID,V_COUNT INT DEFAULT 0;
     
     select count(*) from publisher where name=publisher_name INTO V_COUNT;
@@ -66,7 +67,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `AddBook` (IN `book_ISBN` VARCHAR(20
     
     	INSERT INTO book_copy (book_id, dewey_code, school_id)
     	VALUES(book_ISBN, '_', school_id);
-    ENDIF;
+    END IF;
 END$$
 
 DELIMITER ;
