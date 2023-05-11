@@ -28,45 +28,44 @@ DELIMITER $$
 CREATE DEFINER=`root`@`localhost` 
 PROCEDURE `AddBook` (IN `book_ISBN` VARCHAR(20), IN `title` VARCHAR(255), IN `author_name` VARCHAR(255), IN `publisher_name` VARCHAR(255), IN `year_published` YEAR(4), IN `category_name` VARCHAR(255), IN `school_id` INT(11))   BEGIN
     DECLARE P_ID,C_ID,A_ID,V_COUNT INT DEFAULT 0;
-    
-    select count(*) from publisher where name=publisher_name INTO V_COUNT;
-    IF (V_COUNT=0) THEN
-		INSERT  INTO publisher (name) VALUES (publisher_name);
-		SET P_ID=LAST_INSERT_ID();
-    ELSE
-        select publisher_id from publisher where name=publisher_name INTO P_ID;
-    END IF;
-    
-    select count(*) from category where  name=category_name INTO V_COUNT;
-    IF (V_COUNT=0) THEN
-		INSERT  INTO category (name) VALUES (category_name);
-		SET C_ID=LAST_INSERT_ID();
-    ELSE
-        select category_id from category where name=category_name INTO C_ID;
-    END IF;
-    
-    select count(*)  from author where  name=author_name INTO V_COUNT;
-    IF (V_COUNT=0) THEN
-		INSERT  INTO author (name) VALUES (author_name);
-		SET A_ID=LAST_INSERT_ID();
-    ELSE
-        select author_id from author where name=author_name INTO A_ID;
-    END IF;
-    
     select count(*) from book where ISBN=book_ISBN INTO V_COUNT;
     
     IF(V_COUNT = 0) THEN
-    	INSERT INTO book  (ISBN, title, edition, no_pages, publisher_id, summary, image, `language`, `key-words`)
-    	VALUES(book_ISBN, title, year_published, 0, P_ID, '', '', 'English', '');
-	
-    	INSERT IGNORE INTO book_to_author (ISBN,author_id) 
-    	VALUES(book_ISBN, A_ID);
-    
-    	INSERT INTO book_to_category (ISBN, category_id) 
-    	VALUES(book_ISBN, C_ID);
-    
-    	INSERT INTO book_copy (book_id, dewey_code, school_id)
-    	VALUES(book_ISBN, '_', school_id);
+	    select count(*) from publisher where name=publisher_name INTO V_COUNT;
+	    IF (V_COUNT=0) THEN
+			INSERT  INTO publisher (name) VALUES (publisher_name);
+			SET P_ID=LAST_INSERT_ID();
+	    ELSE
+		select publisher_id from publisher where name=publisher_name INTO P_ID;
+	    END IF;
+
+	    select count(*) from category where  name=category_name INTO V_COUNT;
+	    IF (V_COUNT=0) THEN
+			INSERT  INTO category (name) VALUES (category_name);
+			SET C_ID=LAST_INSERT_ID();
+	    ELSE
+		select category_id from category where name=category_name INTO C_ID;
+	    END IF;
+
+	    select count(*)  from author where  name=author_name INTO V_COUNT;
+	    IF (V_COUNT=0) THEN
+			INSERT  INTO author (name) VALUES (author_name);
+			SET A_ID=LAST_INSERT_ID();
+	    ELSE
+		select author_id from author where name=author_name INTO A_ID;
+	    END IF;
+
+	    INSERT INTO book  (ISBN, title, edition, no_pages, publisher_id, summary, image, `language`, `key-words`)
+	    VALUES(book_ISBN, title, year_published, 0, P_ID, '', '', 'English', '');
+
+	    INSERT IGNORE INTO book_to_author (ISBN,author_id) 
+	    VALUES(book_ISBN, A_ID);
+
+	    INSERT INTO book_to_category (ISBN, category_id) 
+	    VALUES(book_ISBN, C_ID);
+
+	    INSERT INTO book_copy (book_id, dewey_code, school_id)
+	    VALUES(book_ISBN, '_', school_id);
     END IF;
 END$$
 
