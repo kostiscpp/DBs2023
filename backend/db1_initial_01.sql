@@ -25,7 +25,7 @@ DELIMITER $$
 --
 -- Procedures
 --
-CREATE DEFINER=`root`@`localhost` PROCEDURE `AddBook` (IN `ISBN` VARCHAR(20), IN `title` VARCHAR(255), IN `author_name` VARCHAR(255), IN `publisher_name` VARCHAR(255), IN `year_published` YEAR(4), IN `category_name` VARCHAR(255), IN `school_id` INT(11))   BEGIN
+CREATE DEFINER=`root`@`localhost` PROCEDURE `AddBook` (IN `book_ISBN` VARCHAR(20), IN `title` VARCHAR(255), IN `author_name` VARCHAR(255), IN `publisher_name` VARCHAR(255), IN `year_published` YEAR(4), IN `category_name` VARCHAR(255), IN `school_id` INT(11))   BEGIN
     DECLARE P_ID,C_ID,A_ID,V_COUNT INT DEFAULT 0;
     
     select count(*) from publisher where name=publisher_name INTO V_COUNT;
@@ -41,7 +41,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `AddBook` (IN `ISBN` VARCHAR(20), IN
 		INSERT  INTO category (name) VALUES (category_name);
 		SET C_ID=LAST_INSERT_ID();
     ELSE
-        select category_id from category where name=publisher_name INTO C_ID;
+        select category_id from category where name=category_name INTO C_ID;
     END IF;
     
     select count(*)  from author where  name=author_name INTO V_COUNT;
@@ -49,21 +49,24 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `AddBook` (IN `ISBN` VARCHAR(20), IN
 		INSERT  INTO author (name) VALUES (author_name);
 		SET A_ID=LAST_INSERT_ID();
     ELSE
-        select author_id from author where name=publisher_name INTO A_ID;
+        select author_id from author where name=author_name INTO A_ID;
     END IF;
     
-    INSERT IGNORE INTO book  (ISBN, title, edition, no_pages, publisher_id, summary, image, `language`, `key-words`)
-    VALUES(ISBN, title, year_published, 0, P_ID, '', '', 'English', '');
+    select count(*) from book where ISBN=book_ISBN INTO V_COUNT;
+    
+    IF(V_COUNT = 0)
+    	INSERT INTO book  (ISBN, title, edition, no_pages, publisher_id, summary, image, `language`, `key-words`)
+    	VALUES(book_ISBN, title, year_published, 0, P_ID, '', '', 'English', '');
 	
-    INSERT IGNORE INTO book_to_author (ISBN,author_id) 
-    VALUES(ISBN, A_ID);
+    	INSERT IGNORE INTO book_to_author (ISBN,author_id) 
+    	VALUES(book_ISBN, A_ID);
     
-    INSERT IGNORE INTO book_to_category (ISBN, category_id) 
-    VALUES(ISBN, C_ID);
+    	INSERT INTO book_to_category (ISBN, category_id) 
+    	VALUES(book_ISBN, C_ID);
     
-    INSERT INTO book_copy (book_id, dewey_code, school_id)
-    VALUES(ISBN, '_', school_id);
-
+    	INSERT INTO book_copy (book_id, dewey_code, school_id)
+    	VALUES(book_ISBN, '_', school_id);
+    ENDIF;
 END$$
 
 DELIMITER ;
