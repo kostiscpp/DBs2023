@@ -54,7 +54,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `AddBook` (IN `book_ISBN` VARCHAR(20
     
     select count(*) from book where ISBN=book_ISBN INTO V_COUNT;
     
-    IF(V_COUNT = 0)
+    IF(V_COUNT = 0) THEN
     	INSERT INTO book  (ISBN, title, edition, no_pages, publisher_id, summary, image, `language`, `key-words`)
     	VALUES(book_ISBN, title, year_published, 0, P_ID, '', '', 'English', '');
 	
