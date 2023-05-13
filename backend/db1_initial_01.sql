@@ -1,4 +1,3 @@
-
 DROP DATABASE IF EXISTS db1initial;
 
 CREATE DATABASE db1initial;
@@ -65,7 +64,7 @@ PROCEDURE `AddBook` (IN `book_ISBN` VARCHAR(20), IN `title` VARCHAR(255), IN `au
 	    INSERT INTO book  (ISBN, title, edition, no_pages, publisher_id, summary, image, `language`, `key-words`)
 	    VALUES(book_ISBN, title, year_published, 0, P_ID, '', '', 'English', '');
 
-	    INSERT IGNORE INTO book_to_author (ISBN,author_id) 
+	    INSERT INTO book_to_author (ISBN,author_id) 
 	    VALUES(book_ISBN, A_ID);
 
 	    INSERT INTO book_to_category (ISBN, category_id) 
@@ -75,6 +74,37 @@ PROCEDURE `AddBook` (IN `book_ISBN` VARCHAR(20), IN `title` VARCHAR(255), IN `au
 	    VALUES(book_ISBN, '_', school_id);
     END IF;
 END$$
+
+DELIMITER ;
+
+
+DELIMITER //
+
+CREATE TRIGGER tr_more_than_two
+BEFORE INSERT ON checkout
+FOR EACH ROW
+BEGIN
+  DECLARE borrow_count INT;
+  SELECT COUNT(*) INTO borrow_count FROM checkout WHERE user_id = NEW.user_id;
+  IF borrow_count >= 2 THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cannot borrow more than 2 books.';
+  END IF;
+END //
+
+CREATE TRIGGER tr_check_overdue
+BEFORE INSERT ON checkout
+FOR EACH ROW
+BEGIN
+
+  IF (
+    SELECT COUNT(*) FROM checkout
+    WHERE user_id = NEW.user_id
+      AND return_time IS NULL
+      AND DATEDIFF(CURDATE(), checkout_time) > 7
+  ) > 0 THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cannot borrow books, you have an overdue book checkout.';
+  END IF;
+END //
 
 DELIMITER ;
 
@@ -104,7 +134,7 @@ CREATE TABLE `school` (
   `phone_number` bigint(10) NOT NULL,
   `email` varchar(30) NOT NULL,
   `principal_name` varchar(60) NOT NULL,
-  `school_admin_name` varchar(60) NOT NULL,
+  `operator_name` varchar(60) NOT NULL,
   PRIMARY KEY (`school_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ;
 
@@ -164,6 +194,7 @@ CREATE TABLE `book_copy` (
   `book_id` varchar(20) NOT NULL,
   `dewey_code` varchar(8) NOT NULL DEFAULT '800.0xxx' COMMENT 'https://en.wikipedia.org/wiki/List_of_Dewey_Decimal_classes ',
   `school_id` int(11) NOT NULL,
+  `status` enum('available', 'hold', 'checkout') NOT NULL DEFAULT 'available',
   PRIMARY KEY (`copy_id`),
   CONSTRAINT `FK_ISBN` FOREIGN KEY (`book_id`) REFERENCES `book` (`ISBN`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `FK_SCHOOL_ID` FOREIGN KEY (`school_id`) REFERENCES `school` (`school_id`) ON DELETE CASCADE ON UPDATE CASCADE
@@ -215,7 +246,7 @@ CREATE TABLE `user` (
   `email` varchar(255) NOT NULL,
   `school_id` int(11) NOT NULL,
   `status` enum('active','inactive','deleted') NOT NULL,
-  `role` enum('admin','school-admin','teacher','student') NOT NULL,
+  `role` enum('admin','operator','teacher','student') NOT NULL,
   `profile` varchar(255) NOT NULL DEFAULT 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/59/User-avatar.svg/300px-User-avatar.svg.png',
   `barcode` varchar(20) DEFAULT NULL,
   PRIMARY KEY (`user_id`),
@@ -230,9 +261,8 @@ CREATE TABLE `user` (
 
 CREATE TABLE `checkout` (
   `checkout_id` int(11) NOT NULL AUTO_INCREMENT,
-  `start_time` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  `end_time` datetime NOT NULL,
-  `is_returned` tinyint(1) NOT NULL,
+  `checkout_time` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `return_time` datetime,
   `book_copy_id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
   PRIMARY KEY (`checkout_id`),
@@ -317,6 +347,9 @@ CREATE TABLE `book_to_keyword` (
   CONSTRAINT `FK_KW_ISBN` FOREIGN KEY (`ISBN`) REFERENCES `book` (`ISBN`),
   CONSTRAINT `FK_KW_ID` FOREIGN KEY (`keyword_id`) REFERENCES `keyword` (`keyword_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ;
+
+
+
 
 COMMIT;
 
