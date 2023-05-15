@@ -26,6 +26,22 @@ BEGIN
   END IF;
 END //
 
+CREATE TRIGGER tr_same_book
+BEFORE INSERT ON checkout
+FOR EACH ROW
+BEGIN
+
+  IF (
+    SELECT COUNT(*) FROM checkout c
+    WHERE c.user_id = NEW.user_id
+      AND c.return_time IS NULL
+      AND ((SELECT book_id FROM book_copy WHERE NEW.book_copy_id = copy_id) = (SELECT book_id FROM book_copy WHERE c.book_copy_id = copy_id)) 
+  ) > 0 THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cannot borrow 2 copies of the same book.';
+  END IF;
+END //
+
+
 DELIMITER ;
 
 
