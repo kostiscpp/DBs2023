@@ -1,15 +1,15 @@
 -- Create a view for School A
 CREATE VIEW school_a_books_view AS
-SELECT b.title, b.ISBN, b.edition
+SELECT * 
 FROM book b
-JOIN book_copy bc ON b.ISBN = bc.ISBN
-WHERE bc.school_id = <school_a_id>;
+JOIN book_copy bc ON b.ISBN = bc.book_id
+WHERE bc.school_id = 1;
 
 -- Create a view for School B
-CREATE VIEW school_b_books_view AS
-SELECT b.title, b.ISBN, b.edition
+CREATE VIEW school_a_books_view AS
+SELECT * 
 FROM book b
-JOIN book_copy bc ON b.ISBN = bc.ISBN
-WHERE bc.school_id = <school_b_id>;
+JOIN book_copy bc ON b.ISBN = bc.book_id
+WHERE bc.school_id = 2;
 
 -- Create more views for other schools as needed
