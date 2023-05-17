@@ -6,7 +6,7 @@ JOIN book_copy bc ON b.ISBN = bc.book_id
 WHERE bc.school_id = 1;
 
 -- Create a view for School B
-CREATE VIEW school_a_books_view AS
+CREATE VIEW school_b_books_view AS
 SELECT * 
 FROM book b
 JOIN book_copy bc ON b.ISBN = bc.book_id
