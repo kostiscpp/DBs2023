@@ -62,7 +62,7 @@ PROCEDURE `AddBook` (IN `book_ISBN` VARCHAR(20), IN `title` VARCHAR(255), IN `au
 	    END IF;
 
 	    INSERT INTO book  (ISBN, title, edition, no_pages, publisher_id, summary, image, `language`, `key-words`)
-	    VALUES(book_ISBN, title, year_published, 0, P_ID, '', '', 'English', '');
+	    VALUES(book_ISBN, title, year_published, 0, P_ID, 'English','');
 
 	    INSERT INTO book_to_author (ISBN,author_id) 
 	    VALUES(book_ISBN, A_ID);
