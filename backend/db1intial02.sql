@@ -32,7 +32,7 @@ DELIMITER $$
 -- Procedures
 --
 CREATE DEFINER=`root`@`localhost` 
-PROCEDURE `AddBook` (IN `book_ISBN` VARCHAR(20), IN `title` VARCHAR(255), IN `author_name` VARCHAR(255), IN `publisher_name` VARCHAR(255), IN `year_published` YEAR(4), IN `category_name` VARCHAR(255), IN `school_id` INT(11), IN `book_copies` INT(11), IN `dewey_code` VARCHAR(8), IN `no_pages` INT(11))   BEGIN
+PROCEDURE `AddBook` (IN `book_ISBN` VARCHAR(20), IN `title` VARCHAR(255), IN `author_name` VARCHAR(255), IN `publisher_name` VARCHAR(255), IN `year_published` YEAR(4), IN `category_name` VARCHAR(255), IN `keywords` VARCHAR(255), IN `school_id` INT(11), IN `book_copies` INT(11), IN `dewey_code` VARCHAR(8), IN `no_pages` INT(11))   BEGIN
     DECLARE P_ID,C_ID,A_ID,V_COUNT INT DEFAULT 0;
     select count(*) from book where ISBN=book_ISBN INTO V_COUNT;
     
@@ -61,8 +61,8 @@ PROCEDURE `AddBook` (IN `book_ISBN` VARCHAR(20), IN `title` VARCHAR(255), IN `au
 		select author_id from author where name=author_name INTO A_ID;
 	    END IF;
 
-	    INSERT INTO book  (ISBN, title, edition, no_pages, publisher_id,year_published, dewey_code)
-	    VALUES(book_ISBN, title, year_published, no_pages, P_ID,year_published, dewey_code);
+	    INSERT INTO book  (ISBN, title, edition, no_pages, publisher_id,year_published, dewey_code, keywords)
+	    VALUES(book_ISBN, title, year_published, no_pages, P_ID,year_published, dewey_code, keywords);
 
 	    INSERT INTO book_to_author (ISBN,author_id) 
 	    VALUES(book_ISBN, A_ID);
@@ -257,7 +257,7 @@ CREATE TABLE `book` (
   `summary` longtext NOT NULL DEFAULT 'Summary of the Book',
   `image` varchar(255) NOT NULL DEFAULT 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTeE4BZwuwU8ODTBIrNIoSs4xxVuOU2XSzQTQ&usqp=CAU',
   `language` varchar(40) NOT NULL DEFAULT 'English',
-  `key-words` varchar(70) NOT NULL DEFAULT 'Key words of the book',
+  `keywords` varchar(255) NOT NULL DEFAULT 'Key words of the book',
   `year_published` year(4) NOT NULL,
   PRIMARY KEY (ISBN),
   CONSTRAINT `FK_PUBLISHER_ID` FOREIGN KEY (publisher_id) REFERENCES `publisher` (publisher_id)
