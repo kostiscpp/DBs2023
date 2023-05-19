@@ -166,19 +166,19 @@ BEGIN
     END IF;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `Checkoutbook` (IN `checkout_time` DATETIME, IN `return_time` DATETIME, IN `ISBN` VARCHAR(20), IN `user_id` INT(11), IN `school_id` INT(11))   BEGIN
- DECLARE AV_COUNT, CH_COUNT INT DEFAULT 0;
- (SELECT COUNT(*))
- IF(AV_COUNT > 0) THEN
-  INSERT INTO checkout (checkout_time, return_time, checkout_status,book_copy_id, user_id)
-   VALUES (checkout_time, NULL, 'active', book_copy_id, user_id);
- ELSE IF(CH_COUNT > 0)
-       INSERT INTO hold (start_time, end_time, book_copy_id, user_id, hold_status)
-       VALUES (checkout_time, NULL, book_copy_id, user_id, 'active');
-     ELSE 
-       SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Book unavailable';
- END IF;
- END$$
+-- CREATE DEFINER=`root`@`localhost` PROCEDURE `Checkoutbook` (IN `checkout_time` DATETIME, IN `return_time` DATETIME, IN `ISBN` VARCHAR(20), IN `user_id` INT(11), IN `school_id` INT(11))   BEGIN
+--  DECLARE AV_COUNT, CH_COUNT INT DEFAULT 0;
+--  (SELECT COUNT(*))
+--  IF(AV_COUNT > 0) THEN
+--   INSERT INTO checkout (checkout_time, return_time, checkout_status,book_copy_id, user_id)
+--    VALUES (checkout_time, NULL, 'active', book_copy_id, user_id);
+--  ELSE IF(CH_COUNT > 0)
+--        INSERT INTO hold (start_time, end_time, book_copy_id, user_id, hold_status)
+--        VALUES (checkout_time, NULL, book_copy_id, user_id, 'active');
+--      ELSE 
+--        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Book unavailable';
+--  END IF;
+--  END$$
 
 
 
@@ -360,11 +360,11 @@ CREATE TABLE `checkout` (
 
 CREATE TABLE `hold` (
   `hold_id` int(11) NOT NULL AUTO_INCREMENT,
-  `hold_time` datetime NOT NULL,
-  `expiration_time` datetime NOT NULL,
+  `hold_time` datetime NOT NULL DEFAULT current_timestamp(),
+  `expiration_time` datetime NOT NULL DEFAULT DATE_ADD(current_timestamp(), INTERVAL 1 WEEK),
   `book_copy_id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
-  `hold_status` enum('completed','active', 'cancelled', 'pending') NOT NULL,
+  `hold_status` enum('completed','active', 'cancelled', 'pending') NOT NULL DEFAULT 'active',
   PRIMARY KEY (`hold_id`),
   CONSTRAINT `FK_H_COPY_ID` FOREIGN KEY (`book_copy_id`) REFERENCES `book_copy` (`copy_id`),
   CONSTRAINT `FK_UID` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`)
@@ -420,8 +420,8 @@ BEFORE INSERT ON checkout
 FOR EACH ROW
 BEGIN
   DECLARE CH_COUNT INT(11) DEFAULT 0;
-  SELECT COUNT(*) INTO CH_COUNT FROM checkout WHERE user_id = NEW.user_id AND (checkout_status = 'active' OR checkout_status = 'overdue') 
-  IF CH_COUNT == 1 AND (SELECT `role` FROM user WHERE user_id = NEW.user_id) = 'teacher' THEN
+  SELECT COUNT(*) INTO CH_COUNT FROM checkout WHERE user_id = NEW.user_id AND (checkout_status = 'active' OR checkout_status = 'overdue');
+  IF CH_COUNT = 1 AND (SELECT `role` FROM user WHERE user_id = NEW.user_id) = 'teacher' THEN
     SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cannot reserve more than 1 book.';
   END IF;
   IF CH_COUNT >= 2 THEN
@@ -464,8 +464,8 @@ BEFORE INSERT ON hold
 FOR EACH ROW
 BEGIN
   DECLARE hold_count INT;
-  SELECT COUNT(*) INTO hold_count FROM hold WHERE user_id = NEW.user_id AND hold_status = 'active';
-  IF hold_count == 1 AND (SELECT `role` FROM user WHERE user_id = NEW.user_id) = 'teacher' THEN
+  SELECT COUNT(*) INTO hold_count FROM hold WHERE (user_id = NEW.user_id AND hold_status = 'active');
+  IF hold_count = 1 AND (SELECT `role` FROM user WHERE user_id = NEW.user_id) = 'teacher' THEN
     SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cannot reserve more than 1 book.';
   END IF;
   IF hold_count >= 2 THEN
@@ -540,28 +540,32 @@ BEGIN
 
 END //
 
-CREATE TRIGGER tr_request
-AFTER INSERT ON hold
-FOR EACH ROW
-BEGIN
-    IF (SELECT available_copies_number FROM book_copy WHERE book_copy_id = NEW.book_copy_id) > 0
-    THEN 
-        UPDATE hold SET hold_status = 'pending';
-    END IF;
+-- !!!!!!!!!!!!!!!!!! FOR FRONTEND !!!!!!!!!!!!!!!!!!!!!!
+-- CREATE TRIGGER tr_request
+-- AFTER INSERT ON hold
+-- FOR EACH ROW
+-- BEGIN
+--     IF (SELECT available_copies_number FROM book_copy WHERE copy_id = NEW.book_copy_id) > 0
+--     THEN 
+--         UPDATE hold SET hold_status = 'pending' WHERE book_copy_id = NEW.book_copy_id AND user_id = NEW.user_id;
+--     END IF;
 
-END //
+-- END //
+
+-- !!!!!!!!!!!!!!!!!!!!!!!!!!! ALSO !!!!!!!!!!!!!!!!!!!!!!!!!!
+-- When updating for book return, set date = current_timestamp()
 
 CREATE TRIGGER tr_find_older_h
 AFTER UPDATE ON book_copy
 FOR EACH ROW
 BEGIN
     DECLARE U_ID INT(11) DEFAULT 0;
-    IF (NEW.available_copies_number > 0) AND ((SELECT COUNT(*) FROM hold WHERE book_copy_id = NEW.copy_id AND hold_status = 'active' AND expiration_time < current_timestamp() LIMIT 1) > 0 )
+    IF (NEW.available_copies_number > 0) AND ((SELECT COUNT(*) FROM hold WHERE book_copy_id = NEW.copy_id AND hold_status = 'active' AND expiration_time > current_timestamp() LIMIT 1) > 0 )
     THEN
         SELECT user_id INTO U_ID FROM hold WHERE book_copy_id = NEW.copy_id 
         ORDER BY hold_time ASC 
         LIMIT 1;
-        UPDATE hold SET hold_status = 'pending';  
+        UPDATE hold SET hold_status = 'pending' WHERE user_id = U_ID AND NEW.copy_id = book_copy_id;  
     END IF;
 
 END //
