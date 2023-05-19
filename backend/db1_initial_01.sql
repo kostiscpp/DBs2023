@@ -61,8 +61,8 @@ PROCEDURE `AddBook` (IN `book_ISBN` VARCHAR(20), IN `title` VARCHAR(255), IN `au
 		select author_id from author where name=author_name INTO A_ID;
 	    END IF;
 
-	    INSERT INTO book  (ISBN, title, edition, no_pages, publisher_id, summary, image, `language`, `key-words`)
-	    VALUES(book_ISBN, title, year_published, 0, P_ID, 'English','');
+	    INSERT INTO book  (ISBN, title, edition, no_pages, publisher_id,year_published)
+	    VALUES(book_ISBN, title, year_published, 0, P_ID,year_published);
 
 	    INSERT INTO book_to_author (ISBN,author_id) 
 	    VALUES(book_ISBN, A_ID);
@@ -75,10 +75,112 @@ PROCEDURE `AddBook` (IN `book_ISBN` VARCHAR(20), IN `title` VARCHAR(255), IN `au
     END IF;
 END$$
 
+CREATE DEFINER=`root`@`localhost` PROCEDURE `Add_Author2Book`(IN `book_ISBN` VARCHAR(255), IN `author_name` VARCHAR(255))
+BEGIN
+
+    DECLARE A_ID,V_COUNT INT DEFAULT 0;
+    
+    select count(*) INTO V_COUNT from book where ISBN=book_ISBN;
+    -- If book exists
+    IF(V_COUNT = 1) THEN
+            select count(*)  INTO V_COUNT from author where  name=author_id;
+	    IF (V_COUNT=0) THEN
+			INSERT  INTO author (name) VALUES (author_name);
+			SET A_ID=LAST_INSERT_ID();
+	    ELSE
+		select author_id INTO A_ID from author where name=author_name;
+	    END IF;
+	    INSERT INTO book_to_author (ISBN, author_id) 
+	    VALUES(book_ISBN, A_ID);
+    END IF;
+END$$
 DELIMITER ;
 
+DELIMITER $$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `Add_BookCopy`(IN `book_ISBN` VARCHAR(255), IN `schol_ID` INT(11))
+BEGIN
+-- Procedure AddBookCopy
+--   Add  Book Copies
+--   call AddBookCopy(book_ISBN,school_id);
 
+    DECLARE B_ID,S_ID,B_COUNT,S_COUNT INT DEFAULT 0;
+    
+    select count(*) INTO B_COUNT from book where ISBN=book_ISBN;
+    select count(*) INTO S_COUNT from school where  school_id=school_ID ;
+    -- If book & school exist
+    IF ((B_COUNT = 1) and (S_COUNT=1)) THEN
+          	INSERT INTO book_to_author (ISBN, author_id) 
+	        VALUES(book_ISBN, A_ID);
+    END IF;
+END$$
+DELIMITER ;
 
+DELIMITER $$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `Add_Category2Book`(IN `book_ISBN` VARCHAR(20), IN `category_name` VARCHAR(255))
+BEGIN
+-- Procedure Add_Category2Book
+--   Add Category to existing Book
+--   call Add_Category2Book(book_ISBN,author_name);
+    
+    DECLARE C_ID,V_COUNT INT DEFAULT 0;
+    select count(*)  INTO V_COUNT from book where ISBN=book_ISBN;
+    -- If book exists
+    IF(V_COUNT = 1) THEN
+            select count(*)  INTO V_COUNT from category where  name=category_name;
+	    IF (V_COUNT=0) THEN
+			INSERT  INTO category (name) VALUES (category_name);
+			SET C_ID=LAST_INSERT_ID();
+	    ELSE
+		select category_id  INTO C_ID from category where name=category_name;
+	    END IF;
+	    INSERT INTO book_to_category (ISBN, category_id) 
+	    VALUES(book_ISBN, C_ID);
+    END IF;
+END$$
+DELIMITER ;
+
+DELIMITER $$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `Add_Keyword2Book`(IN `book_ISBN` VARCHAR(255), IN `key_word` VARCHAR(255))
+BEGIN
+-- Procedure Add_Keyword2Book
+--   Add Keyword to existing Book
+--   call Add_Keyword2Book(book_ISBN,key_word);
+    
+    DECLARE K_ID,V_COUNT INT DEFAULT 0;
+    
+    select count(*) INTO V_COUNT from book where ISBN=book_ISBN;
+    -- If book exists
+    IF(V_COUNT = 1) THEN
+            select count(*)  INTO V_COUNT from keyword where  keyword=key_word;
+	    IF (V_COUNT=0) THEN
+			INSERT  INTO keyword (keyword) VALUES (key_word);
+			SET K_ID=LAST_INSERT_ID();
+	    ELSE
+		select keyword_id from keyword where keyword=keyword_name INTO K_ID;
+	    END IF;
+	    INSERT INTO book_to_keyword (ISBN, keyword_id) 
+	    VALUES(book_ISBN, K_ID);
+    END IF;
+END$$
+
+-- CREATE DEFINER=`root`@`localhost` PROCEDURE `Demandbook` (IN `checkout_time` DATETIME, IN `return_time` DATETIME, IN `ISBN` VARCHAR(20), IN `user_id` INT(11), IN `school_id` INT(11))   BEGIN
+ -- DECLARE AV_COUNT, CH_COUNT INT DEFAULT 0;
+--  SELECT COUNT(*) FROM book_copy WHERE book_copy.book_id = ISBN
+--              AND  book_copy.status = 'available' AND book_copy.school_id = school_id INTO AV_COUNT;
+--  SELECT COUNT(*) FROM book_copy WHERE book_copy.book_id = ISBN
+--              AND  book_copy.status = 'checkout' AND book_copy.school_id = school_id INTO CH_COUNT;
+--  IF(AV_COUNT > 0) THEN
+--   INSERT INTO checkout (checkout_time, return_time, checkout_status,book_copy_id, user_id)
+--    VALUES (checkout_time, NULL, 'active', book_copy_id, user_id);
+--  ELSE IF(CH_COUNT > 0)
+--        INSERT INTO hold (start_time, end_time, book_copy_id, user_id, hold_status)
+--        VALUES (checkout_time, NULL, book_copy_id, user_id, 'active');
+--      ELSE 
+--        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Book unavailable';
+--  END IF;
+--  END$$
+
+DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -110,6 +212,8 @@ CREATE TABLE `school` (
   PRIMARY KEY (`school_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ;
 
+ALTER TABLE `school` AUTO_INCREMENT = 0;
+
 -- --------------------------------------------------------
 
 --
@@ -140,6 +244,7 @@ CREATE TABLE `publisher` (
 -- 
 
 CREATE TABLE `book` (
+
   `ISBN` varchar(20) NOT NULL,
   `title` varchar(255) NOT NULL,
   `edition` varchar(50) NOT NULL DEFAULT 'X.0',
@@ -166,7 +271,7 @@ CREATE TABLE `book_copy` (
   `book_id` varchar(20) NOT NULL,
   `dewey_code` varchar(8) NOT NULL DEFAULT '800.0xxx' COMMENT 'https://en.wikipedia.org/wiki/List_of_Dewey_Decimal_classes ',
   `school_id` int(11) NOT NULL,
-  `status` enum('available', 'hold', 'checkout') NOT NULL DEFAULT 'available',
+  `status` enum('available', 'withdrawn', 'checkout') NOT NULL DEFAULT 'available',
   PRIMARY KEY (`copy_id`),
   CONSTRAINT `FK_ISBN` FOREIGN KEY (`book_id`) REFERENCES `book` (`ISBN`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `FK_SCHOOL_ID` FOREIGN KEY (`school_id`) REFERENCES `school` (`school_id`) ON DELETE CASCADE ON UPDATE CASCADE
@@ -217,7 +322,7 @@ CREATE TABLE `user` (
   `birth_date` date NOT NULL,
   `email` varchar(255) NOT NULL,
   `school_id` int(11) NOT NULL,
-  `status` enum('active','inactive','deleted') NOT NULL,
+  `status` enum('active','inactive','deleted', 'pending', 'rejected') NOT NULL DEFAULT 'pending',
   `role` enum('admin','operator','teacher','student') NOT NULL,
   `profile` varchar(255) NOT NULL DEFAULT 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/59/User-avatar.svg/300px-User-avatar.svg.png',
   `barcode` varchar(20) DEFAULT NULL,
@@ -237,6 +342,7 @@ CREATE TABLE `checkout` (
   `return_time` datetime,
   `book_copy_id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
+  `checkout_status` enum('active','returned','overdue','overdue-returned') NOT NULL,
   PRIMARY KEY (`checkout_id`),
   CONSTRAINT `FK_C_COPY_ID` FOREIGN KEY (book_copy_id) REFERENCES `book_copy` (copy_id),
   CONSTRAINT `FK_USER_ID` FOREIGN KEY (user_id) REFERENCES `user` (user_id)
@@ -250,11 +356,11 @@ CREATE TABLE `checkout` (
 
 CREATE TABLE `hold` (
   `hold_id` int(11) NOT NULL AUTO_INCREMENT,
-  `start_time` datetime NOT NULL,
-  `end_time` datetime NOT NULL,
+  `hold_time` datetime NOT NULL,
+  `expiration_time` datetime NOT NULL,
   `book_copy_id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
-  `hold_status` enum('pending','active') NOT NULL,
+  `hold_status` enum('completed','active', 'cancelled') NOT NULL,
   PRIMARY KEY (`hold_id`),
   CONSTRAINT `FK_H_COPY_ID` FOREIGN KEY (`book_copy_id`) REFERENCES `book_copy` (`copy_id`),
   CONSTRAINT `FK_UID` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`)
@@ -309,7 +415,7 @@ CREATE TABLE `review` (
 
 CREATE TABLE `keyword` (
   `keyword_id` int(11) NOT NULL AUTO_INCREMENT,
-  `keyword` varchar(255) NOT NULL,
+  `word` varchar(255) NOT NULL,
   PRIMARY KEY (keyword_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ;
 
@@ -327,9 +433,7 @@ CREATE TRIGGER tr_more_than_two_ch
 BEFORE INSERT ON checkout
 FOR EACH ROW
 BEGIN
-  DECLARE borrow_count INT;
-  SELECT COUNT(*) INTO borrow_count FROM checkout WHERE user_id = NEW.user_id;
-  IF borrow_count >= 2 THEN
+  IF (SELECT COUNT(*)  FROM checkout WHERE user_id = NEW.user_id AND (checkout_status = 'active' OR checkout_status = 'overdue')) >= 2 THEN
     SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cannot borrow more than 2 books.';
   END IF;
 END //
@@ -364,17 +468,12 @@ BEGIN
   END IF;
 END //
 
-
-DELIMITER ;
-
-DELIMITER //
-
 CREATE TRIGGER tr_more_than_two_h
 BEFORE INSERT ON hold
 FOR EACH ROW
 BEGIN
   DECLARE hold_count INT;
-  SELECT COUNT(*) INTO hold_count FROM hold WHERE user_id = NEW.user_id;
+  SELECT COUNT(*) INTO hold_count FROM hold WHERE user_id = NEW.user_id AND hold_status = 'active';
   IF hold_count >= 2 THEN
     SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cannot reserve more than 2 books.';
   END IF;
@@ -403,15 +502,42 @@ BEGIN
   IF (
     SELECT COUNT(*) FROM hold h
     WHERE h.user_id = NEW.user_id
-      AND h.return_time IS NULL
+      AND h.hold_status = 'active'
       AND ((SELECT book_id FROM book_copy WHERE NEW.book_copy_id = copy_id) = (SELECT book_id FROM book_copy WHERE h.book_copy_id = copy_id)) 
   ) > 0 THEN
     SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cannot hold 2 copies of the same book.';
   END IF;
 END //
 
+CREATE TRIGGER tr_same_book_h_c
+BEFORE INSERT ON hold
+FOR EACH ROW
+BEGIN
+
+  IF (
+    SELECT COUNT(*) FROM checkout c
+    WHERE c.user_id = NEW.user_id
+      AND c.return_time IS NULL
+      AND ((SELECT book_id FROM book_copy WHERE NEW.book_copy_id = copy_id) = (SELECT book_id FROM book_copy WHERE c.book_copy_id = copy_id)) 
+  ) > 0 THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cannot hold a book you have already borrowed.';
+  END IF;
+END //
 
 DELIMITER ;
+
+CREATE OR REPLACE VIEW V_book_school_inventory 
+as
+SELECT school_id AS S_ID,book_id AS B_ID,
+COUNT(CASE WHEN status = 'available' THEN 1 END) as A_COUNT, 
+COUNT(CASE WHEN status = 'checkout' THEN 1 END) as C_COUNT,
+COUNT(CASE WHEN status = 'withdrawn' THEN 1 END) as W_COUNT,
+COUNT(*) as TOTAL
+FROM `book_copy`
+group by B_ID,S_ID
+order by B_ID,S_ID;
+
+-- SELECT * FROM `V_book_school_inventory` WHERE B_ID = '9780006512134' and S_ID=2;
 
 COMMIT;
 
