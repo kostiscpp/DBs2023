@@ -32,7 +32,7 @@ DELIMITER $$
 -- Procedures
 --
 CREATE DEFINER=`root`@`localhost` 
-PROCEDURE `AddBook` (IN `book_ISBN` VARCHAR(20), IN `title` VARCHAR(255), IN `author_name` VARCHAR(255), IN `publisher_name` VARCHAR(255), IN `year_published` YEAR(4), IN `category_name` VARCHAR(255), IN `keywords` VARCHAR(255), IN `school_id` INT(11), IN `book_copies` INT(11), IN `dewey_code` VARCHAR(8), IN `no_pages` INT(11))   BEGIN
+PROCEDURE `AddBook` (IN `book_ISBN` VARCHAR(20), IN `title` VARCHAR(255), IN `author_name` VARCHAR(255), IN `publisher_name` VARCHAR(255), IN `year_published` INT(4), IN `category_name` VARCHAR(255), IN `keywords` VARCHAR(255), IN `school_id` INT(11), IN `book_copies` INT(11), IN `dewey_code` VARCHAR(8), IN `no_pages` INT(11))   BEGIN
     DECLARE P_ID,C_ID,A_ID,V_COUNT INT DEFAULT 0;
     select count(*) from book where ISBN=book_ISBN INTO V_COUNT;
     
@@ -100,7 +100,7 @@ END$$
 DELIMITER ;
 
 DELIMITER $$
-CREATE DEFINER=`root`@`localhost` PROCEDURE `Add_BookCopy`(IN `book_ISBN` VARCHAR(255), IN `schol_ID` INT(11))
+CREATE DEFINER=`root`@`localhost` PROCEDURE `Add_BookCopy`(IN `book_ISBN` VARCHAR(255), IN `school_ID` INT(11))
 BEGIN
 -- Procedure AddBookCopy
 --   Add  Book Copies
@@ -257,7 +257,7 @@ CREATE TABLE `book` (
   `image` varchar(255) NOT NULL DEFAULT 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTeE4BZwuwU8ODTBIrNIoSs4xxVuOU2XSzQTQ&usqp=CAU',
   `language` varchar(40) NOT NULL DEFAULT 'English',
   `keywords` varchar(255) NOT NULL DEFAULT 'Key words of the book',
-  `year_published` year(4) NOT NULL,
+  `year_published` INT(4) NOT NULL,
   PRIMARY KEY (ISBN),
   CONSTRAINT `FK_PUBLISHER_ID` FOREIGN KEY (publisher_id) REFERENCES `publisher` (publisher_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ;
