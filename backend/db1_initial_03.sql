@@ -576,12 +576,17 @@ DELIMITER ;
 
 -- SELECT * FROM `V_book_school_inventory` WHERE B_ID = '9780006512134' and S_ID=2;
 
+-- CREATE OR REPLACE VIEW view_school AS
+-- SELECT * 
+-- FROM book b
+-- JOIN book_copy bc ON b.ISBN = bc.book_id
+-- GROUP BY bc.school_id
+-- ORDER BY bc.school_id;
+
 CREATE OR REPLACE VIEW view_school AS
-SELECT * 
+SELECT b.*, bc.*
 FROM book b
-JOIN book_copy bc ON b.ISBN = bc.book_id
-GROUP BY bc.school_id
-ORDER BY bc.school_id;
+JOIN book_copy bc ON b.ISBN = bc.book_id;
 
 COMMIT;
 
