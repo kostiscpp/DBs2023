@@ -79,7 +79,7 @@ PROCEDURE `AddBook` (IN `book_ISBN` VARCHAR(20), IN `title` VARCHAR(255), IN `au
 	      VALUES(book_ISBN, school_id, book_copies, book_copies);
       ELSE
         UPDATE book_copy SET book_copies_number = book_copies_number + book_copies, available_copies_number = available_copies_number + book_copies
-        WHERE book_id = book_ISBN;
+        WHERE book_id = book_ISBN AND school_id = school_id;
       END IF;
     END IF;
 END$$
@@ -104,22 +104,23 @@ BEGIN
     END IF;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `Add_BookCopy`(IN `book_ISBN` VARCHAR(255), IN `school_ID` INT(11))
-BEGIN
--- Procedure AddBookCopy
---   Add  Book Copies
---   call AddBookCopy(book_ISBN,school_id);
-
-    DECLARE B_ID,S_ID,B_COUNT,S_COUNT INT DEFAULT 0;
-    
-    select count(*) INTO B_COUNT from book where ISBN=book_ISBN;
-    select count(*) INTO S_COUNT from school where  school_id=school_ID ;
-    -- If book & school exist
-    IF ((B_COUNT = 1) and (S_COUNT=1)) THEN
-          	INSERT INTO book_to_author (ISBN, author_id) 
-	        VALUES(book_ISBN, A_ID);
-    END IF;
-END$$
+-- CREATE DEFINER=`root`@`localhost` PROCEDURE `Add_BookCopy`(IN `book_ISBN` VARCHAR(255), IN `school_ID` INT(11))
+-- BEGIN
+---- Procedure AddBookCopy
+----   Add  Book Copies
+----   call AddBookCopy(book_ISBN,school_id);
+--
+--    DECLARE B_ID,S_ID,B_COUNT,S_COUNT INT DEFAULT 0;
+--    
+--    select count(*) INTO B_COUNT from book where ISBN=book_ISBN;
+--    select count(*) INTO S_COUNT from school where  school_id=school_ID ;
+--    -- If book & school exist
+--    IF ((B_COUNT = 1) and (S_COUNT=1)) THEN
+--          	INSERT INTO book_to_author (ISBN, author_id) 
+--	        VALUES(book_ISBN, A_ID);
+--    END IF;
+-- END$$
+--
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `Add_Category2Book`(IN `book_ISBN` VARCHAR(20), IN `category_name` VARCHAR(255))
 BEGIN
