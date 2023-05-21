@@ -104,24 +104,6 @@ BEGIN
     END IF;
 END$$
 
--- CREATE DEFINER=`root`@`localhost` PROCEDURE `Add_BookCopy`(IN `book_ISBN` VARCHAR(255), IN `school_ID` INT(11))
--- BEGIN
----- Procedure AddBookCopy
-----   Add  Book Copies
-----   call AddBookCopy(book_ISBN,school_id);
---
---    DECLARE B_ID,S_ID,B_COUNT,S_COUNT INT DEFAULT 0;
---    
---    select count(*) INTO B_COUNT from book where ISBN=book_ISBN;
---    select count(*) INTO S_COUNT from school where  school_id=school_ID ;
---    -- If book & school exist
---    IF ((B_COUNT = 1) and (S_COUNT=1)) THEN
---          	INSERT INTO book_to_author (ISBN, author_id) 
---	        VALUES(book_ISBN, A_ID);
---    END IF;
--- END$$
---
-
 CREATE DEFINER=`root`@`localhost` PROCEDURE `Add_Category2Book`(IN `book_ISBN` VARCHAR(20), IN `category_name` VARCHAR(255))
 BEGIN
 -- Procedure Add_Category2Book
