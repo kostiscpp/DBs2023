@@ -86,8 +86,8 @@ INSERT INTO `user` (`first_name`, `surname`, `username`, `pwd`, `birth_date`, `e
 ('Αικατερίνη', 'Σταματίου', 'katerina', 'katerina', '1990-03-19', 'katerina@example.com', 4, 'active', 'student', LPAD(FLOOR(RAND() * 999999) + 1, 8, '0')),
 ('Θεόδωρος', 'Σωτηρίου', 'theodoros', 'theodoros', '1983-07-22', 'theodoros@example.com', 4, 'active', 'teacher', LPAD(FLOOR(RAND() * 999999) + 1, 8, '0')),
 ('Ελευθερία', 'Γεωργιάδου', 'eleftheria61', 'eleftheria61', '2014-08-27', 'eleftheria.georgiadou@example.com', 4, 'active', 'student', LPAD(FLOOR(RAND() * 999999) + 1, 8, '0'));
-call AddBook( '9780552149518','Undomestic Goddess,The','Brown, Dan','Corgi Books','2004','Crime, Thriller & Adventure','κονιαρημικροτσουσουνε',1,1,'800.xx',150);
-call AddBook( '9780747532743','Harry Potter and the Philosopher''s Stone#','Rowling, J. K.','Bloomsbury Publishing PLC','1997','Children''s Fiction','κονιαρημικροτσουσουνε',1,1,'800.xx',150);
+call AddBook( '9780552149518','Undomestic Goddess','Brown, Dan','Corgi Books','2004','Crime, Thriller & Adventure','κονιαρημικροτσουσουνε',1,1,'800.xx',150);
+call AddBook( '9780747532743','Harry Potter and the Philosophers Stone#','Rowling, J. K.','Bloomsbury Publishing PLC','1997','Children''s Fiction','κονιαρημικροτσουσουνε',1,1,'800.xx',150);
 call AddBook( '9780747538486','Harry Potter and the Chamber of Secrets#','Rowling, J. K.','Bloomsbury Publishing PLC','1999','Children''s Fiction','κονιαρημικροτσουσουνε',1,1,'800.xx',150);
 call AddBook( '9780552150736','Angels and Demons#','Brown, Dan','Corgi Books','2003','Crime, Thriller & Adventure','κονιαρημικροτσουσουνε',1,1,'800.xx',150);
 call AddBook( '9780747551003','Harry Potter and the Order of the Phoenix','Rowling, J. K.','Bloomsbury Publishing PLC','2003','Children''s Fiction','κονιαρημικροτσουσουνε',1,1,'800.xx',150);
@@ -176,7 +176,7 @@ call AddBook( '9780593050545','I Can Make You Thin','McKenna, Paul','Bantam Pres
 call AddBook( '9780718144845','Happy Days with the Naked Chef','Oliver, Jamie','Michael Joseph','2001','Fitness & Diet','κονιαρημικροτσουσουνε',1,86,'800.xx',150);
 call AddBook( '9780552771153','Brick Lane','Ali, Monica','Black Swan','2004','General & Literary Fiction','κονιαρημικροτσουσουνε',1,87,'800.xx',150);
 call AddBook( '9780141019376','Anybody Out There?','Keyes, Marian','Penguin Books','2007','General & Literary Fiction','κονιαρημικροτσουσουνε',1,88,'800.xx',150);
-call AddBook( '9780552772747','Undomestic Goddess,The','Kinsella, Sophie','Black Swan','2006','General & Literary Fiction','κονιαρημικροτσουσουνε',1,89,'800.xx',150);
+call AddBook( '9780552772747','Undomestic Goddess','Kinsella, Sophie','Black Swan','2006','General & Literary Fiction','κονιαρημικροτσουσουνε',1,89,'800.xx',150);
 call AddBook( '9780552773898','Book Thief,The#','Zusak, Markus','Black Swan','2008','General & Literary Fiction','κονιαρημικροτσουσουνε',1,90,'800.xx',150);
 call AddBook( '9780141022925','I Know You Got Soul','Clarkson, Jeremy','Penguin Books','2006','Autobiography','κονιαρημικροτσουσουνε',1,91,'800.xx',150);
 call AddBook( '9780316731317','Sharon Osbourne Extreme:My Autobiography','Osbourne, Sharon','Time Warner Books','2005','Autobiography','κονιαρημικροτσουσουνε',1,92,'800.xx',150);
@@ -189,7 +189,7 @@ call AddBook( '9781846053443','Dear Fatty','French, Dawn','Century','2008','Auto
 -- Create random no_pages per book
 -- lpad(rand() * 1000000, 1, '0') -- Random 3digits
 -- insert to school_id = 2
-call AddBook( '9780552149518','Undomestic Goddess,The','Brown, Dan','Corgi Books','2004','Crime, Thriller & Adventure','κονιαρημικροτσουσουνε',2,1,'800.xx',150);
+call AddBook( '9780552149518','Undomestic Goddess','Brown, Dan','Corgi Books','2004','Crime, Thriller & Adventure','κονιαρημικροτσουσουνε',2,1,'800.xx',150);
 call AddBook( '9780747532743','Harry Potter and the Philosopher''s Stone#','Rowling, J. K.','Bloomsbury Publishing PLC','1997','Children''s Fiction','κονιαρημικροτσουσουνε',2,1,'800.xx',150);
 call AddBook( '9780747538486','Harry Potter and the Chamber of Secrets#','Rowling, J. K.','Bloomsbury Publishing PLC','1999','Children''s Fiction','κονιαρημικροτσουσουνε',2,1,'800.xx',150);
 call AddBook( '9780552150736','Angels and Demons#','Brown, Dan','Corgi Books','2003','Crime, Thriller & Adventure','κονιαρημικροτσουσουνε',2,1,'800.xx',150);
@@ -281,7 +281,7 @@ call AddBook( '9780593050545','I Can Make You Thin','McKenna, Paul','Bantam Pres
 call AddBook( '9780718144845','Happy Days with the Naked Chef','Oliver, Jamie','Michael Joseph','2001','Fitness & Diet','κονιαρημικροτσουσουνε',3,86,'800.xx',150);
 call AddBook( '9780552771153','Brick Lane','Ali, Monica','Black Swan','2004','General & Literary Fiction','κονιαρημικροτσουσουνε',3,87,'800.xx',150);
 call AddBook( '9780141019376','Anybody Out There?','Keyes, Marian','Penguin Books','2007','General & Literary Fiction','κονιαρημικροτσουσουνε',3,88,'800.xx',150);
-call AddBook( '9780552772747','Undomestic Goddess,The','Kinsella, Sophie','Black Swan','2006','General & Literary Fiction','κονιαρημικροτσουσουνε',3,89,'800.xx',150);
+call AddBook( '9780552772747','Undomestic Goddess','Kinsella, Sophie','Black Swan','2006','General & Literary Fiction','κονιαρημικροτσουσουνε',3,89,'800.xx',150);
 call AddBook( '9780552773898','Book Thief,The#','Zusak, Markus','Black Swan','2008','General & Literary Fiction','κονιαρημικροτσουσουνε',3,90,'800.xx',150);
 call AddBook( '9780141022925','I Know You Got Soul','Clarkson, Jeremy','Penguin Books','2006','Autobiography','κονιαρημικροτσουσουνε',3,91,'800.xx',150);
 call AddBook( '9780316731317','Sharon Osbourne Extreme:My Autobiography','Osbourne, Sharon','Time Warner Books','2005','Autobiography','κονιαρημικροτσουσουνε',3,92,'800.xx',150);
@@ -292,7 +292,7 @@ call AddBook( '9780552997034','Down Under','Bryson, Bill','Black Swan','2001','G
 call AddBook( '9780099506928','Spot of Bother,A','Haddon, Mark','Vintage','2007','General & Literary Fiction','κονιαρημικροτσουσουνε',3,97,'800.xx',150);
 call AddBook( '9781846053443','Dear Fatty','French, Dawn','Century','2008','Autobiography','κονιαρημικροτσουσουνε',3,98,'800.xx',150);
 -- school_id = 4
-call AddBook( '9780552149518','Undomestic Goddess,The','Brown, Dan','Corgi Books','2004','Crime, Thriller & Adventure','κονιαρημικροτσουσουνε',4,1,'800.xx',150);
+call AddBook( '9780552149518','Undomestic Goddess','Brown, Dan','Corgi Books','2004','Crime, Thriller & Adventure','κονιαρημικροτσουσουνε',4,1,'800.xx',150);
 call AddBook( '9780747532743','Harry Potter and the Philosopher''s Stone#','Rowling, J. K.','Bloomsbury Publishing PLC','1997','Children''s Fiction','κονιαρημικροτσουσουνε',4,1,'800.xx',150);
 call AddBook( '9780747538486','Harry Potter and the Chamber of Secrets#','Rowling, J. K.','Bloomsbury Publishing PLC','1999','Children''s Fiction','κονιαρημικροτσουσουνε',4,1,'800.xx',150);
 call AddBook( '9780552150736','Angels and Demons#','Brown, Dan','Corgi Books','2003','Crime, Thriller & Adventure','κονιαρημικροτσουσουνε',4,1,'800.xx',150);
@@ -333,7 +333,7 @@ call AddBook( '9780593050545','I Can Make You Thin','McKenna, Paul','Bantam Pres
 call AddBook( '9780718144845','Happy Days with the Naked Chef','Oliver, Jamie','Michael Joseph','2001','Fitness & Diet','κονιαρημικροτσουσουνε',4,86,'800.xx',150);
 call AddBook( '9780552771153','Brick Lane','Ali, Monica','Black Swan','2004','General & Literary Fiction','κονιαρημικροτσουσουνε',4,87,'800.xx',150);
 call AddBook( '9780141019376','Anybody Out There?','Keyes, Marian','Penguin Books','2007','General & Literary Fiction','κονιαρημικροτσουσουνε',4,88,'800.xx',150);
-call AddBook( '9780552772747','Undomestic Goddess,The','Kinsella, Sophie','Black Swan','2006','General & Literary Fiction','κονιαρημικροτσουσουνε',4,89,'800.xx',150);
+call AddBook( '9780552772747','Undomestic Goddess','Kinsella, Sophie','Black Swan','2006','General & Literary Fiction','κονιαρημικροτσουσουνε',4,89,'800.xx',150);
 call AddBook( '9780552773898','Book Thief,The#','Zusak, Markus','Black Swan','2008','General & Literary Fiction','κονιαρημικροτσουσουνε',4,90,'800.xx',150);
 call AddBook( '9780141022925','I Know You Got Soul','Clarkson, Jeremy','Penguin Books','2006','Autobiography','κονιαρημικροτσουσουνε',4,91,'800.xx',150);
 call AddBook( '9780316731317','Sharon Osbourne Extreme:My Autobiography','Osbourne, Sharon','Time Warner Books','2005','Autobiography','κονιαρημικροτσουσουνε',4,92,'800.xx',150);
@@ -364,4 +364,3 @@ call Addbook('9780060951395', 'Brave New World', 'Aldous Huxley', 'Harper Perenn
 call Addbook('9780385721790', 'The Kite Runner', 'Khaled Hosseini', 'Riverhead Books', 2003, 'Fiction, Historical', 'friendship, guilt, redemption', 2, 2, '813.6', 371);
 call Addbook('9780451524936', 'Frankenstein', 'Mary Shelley', 'Signet Classics', 1818, 'Fiction, Horror', 'science, creation, morality', 3, 3, '823.7', 352);
 call Addbook('9780060562496', 'The Odyssey', 'Homer', 'Harper Perennial Modern Classics', 8, 'Poetry, Epic', 'heroism, adventure, homecoming', 4, 1, '883', 541);
-
