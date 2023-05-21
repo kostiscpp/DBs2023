@@ -128,6 +128,10 @@ END$$
 
  CREATE DEFINER=`root`@`localhost` PROCEDURE `DemandBook` (IN `book_copy_id` INT(11), IN `user_id` INT(11))
   BEGIN
+    -- Update current holds/checkouts
+    UPDATE checkout c SET c.checkout_status = 'overdue' WHERE c.checkout_status = 'active' AND c.user_id = user_id AND DATEDIFF(CURDATE(),c.checkout_time) > 7;
+    UPDATE hold h SET h.hold_status = 'cancelled' WHERE h.hold_status = 'active' AND h.user_id = user_id AND DATEDIFF(CURDATE(),h.expiration_time) < 0;
+    --
     INSERT INTO hold (book_copy_id, user_id) VALUES (book_copy_id, user_id);
     IF (SELECT available_copies_number FROM book_copy WHERE copy_id = book_copy_id) > 0
     THEN 
