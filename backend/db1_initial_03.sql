@@ -155,8 +155,9 @@ END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `CheckoutBook` (IN `book_copy_id` INT(11), IN `user_id` INT(11))
   BEGIN
-    INSERT INTO checkout (book_copy_id, user_id) VALUES (book_copy_id, user_id);
     UPDATE hold h SET h.hold_status = 'completed' WHERE h.book_copy_id = book_copy_id AND h.user_id = user_id;
+    UPDATE book_copy SET available_copies_number = available_copies_number + 1 WHERE copy_id = book_copy_id  ;
+    INSERT INTO checkout (book_copy_id, user_id) VALUES (book_copy_id, user_id);
   END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `ReturnBook` (IN `book_copy_id` INT(11), IN `user_id` INT(11))
@@ -316,7 +317,7 @@ CREATE TABLE `user` (
   `status` enum('active','inactive','deleted', 'pending', 'rejected') NOT NULL DEFAULT 'pending',
   `role` enum('admin','operator','teacher','student') NOT NULL,
   `profile` varchar(255) NOT NULL DEFAULT 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/59/User-avatar.svg/300px-User-avatar.svg.png',
-  `barcode` varchar(20) UNIQUE,
+  `barcode` varchar(20) DEFAULT NULL,
   PRIMARY KEY (`user_id`),
   CONSTRAINT `FK_SCH_ID` FOREIGN KEY (`school_id`) REFERENCES `school` (`school_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ;
@@ -430,7 +431,7 @@ BEFORE INSERT ON hold
 FOR EACH ROW
 BEGIN
   DECLARE hold_count INT;
-  SELECT COUNT(*) INTO hold_count FROM hold WHERE (user_id = NEW.user_id AND hold_status = 'active');
+  SELECT COUNT(*) INTO hold_count FROM hold WHERE (user_id = NEW.user_id AND (hold_status = 'active' OR hold_status = 'pending'));
   IF hold_count = 1 AND (SELECT `role` FROM user WHERE user_id = NEW.user_id) = 'teacher' THEN
     SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cannot reserve more than 1 book.';
   END IF;
@@ -462,7 +463,7 @@ BEGIN
   IF (
     SELECT COUNT(*) FROM hold h
     WHERE h.user_id = NEW.user_id
-      AND h.hold_status = 'active'
+      AND (h.hold_status = 'active' OR h.hold_status = 'pending')
       AND (h.book_copy_id = NEW.book_copy_id) 
   ) > 0 THEN
     SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cannot hold 2 copies of the same book.';
@@ -484,15 +485,15 @@ BEGIN
   END IF;
 END //
 
--- CREATE TRIGGER tr_decr_availability_ch
--- AFTER INSERT ON checkout
--- FOR EACH ROW
--- BEGIN
---     UPDATE book_copy
---     SET available_copies_number = available_copies_number - 1
---     WHERE copy_id = NEW.book_copy_id;
--- END //
--- 
+ CREATE TRIGGER tr_decr_availability_ch
+ AFTER INSERT ON checkout
+ FOR EACH ROW
+ BEGIN
+     UPDATE book_copy
+     SET available_copies_number = available_copies_number - 1
+     WHERE copy_id = NEW.book_copy_id;
+ END //
+ 
 CREATE TRIGGER tr_incr_availability_ch
 AFTER UPDATE ON checkout
 FOR EACH ROW
@@ -528,7 +529,7 @@ BEGIN
     DECLARE U_ID INT(11) DEFAULT 0;
     IF (NEW.available_copies_number > 0) AND ((SELECT COUNT(*) FROM hold WHERE book_copy_id = NEW.copy_id AND hold_status = 'active' AND expiration_time > current_timestamp() LIMIT 1) > 0 )
     THEN
-        SELECT user_id INTO U_ID FROM hold WHERE book_copy_id = NEW.copy_id 
+        SELECT user_id INTO U_ID FROM hold WHERE book_copy_id = NEW.copy_id AND hold_status = 'active'
         ORDER BY hold_time ASC 
         LIMIT 1;
         UPDATE hold SET hold_status = 'pending' WHERE user_id = U_ID AND NEW.copy_id = book_copy_id;  
