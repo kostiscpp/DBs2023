@@ -73,13 +73,13 @@ PROCEDURE `AddBook` (IN `book_ISBN` VARCHAR(20), IN `title` VARCHAR(255), IN `au
 	    INSERT INTO book_copy (book_id, school_id, book_copies_number, available_copies_number)
 	    VALUES(book_ISBN, school_id, book_copies, book_copies);
     ELSE
-      select count(*)  from book_copy b where b.school_id = school_id and b.ISBN = book_ISBN INTO V_COUNT;
+      select count(*) INTO V_COUNT from book_copy b where b.school_id = school_id and b.ISBN = book_ISBN;
       IF (V_COUNT = 0) THEN
         INSERT INTO book_copy (book_id, school_id, book_copies_number, available_copies_number)
 	      VALUES(book_ISBN, school_id, book_copies, book_copies);
       ELSE
-        UPDATE book_copy SET book_copies_number = book_copies_number + book_copies, available_copies_number = available_copies_number + book_copies
-        WHERE book_id = book_ISBN AND school_id = school_id;
+        UPDATE book_copy b SET b.book_copies_number = b.book_copies_number + book_copies, b.available_copies_number = b.available_copies_number + book_copies
+        WHERE b.book_id = book_ISBN AND b.school_id = school_id;
       END IF;
     END IF;
 END$$
