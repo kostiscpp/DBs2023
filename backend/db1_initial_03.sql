@@ -316,7 +316,7 @@ CREATE TABLE `user` (
   `status` enum('active','inactive','deleted', 'pending', 'rejected') NOT NULL DEFAULT 'pending',
   `role` enum('admin','operator','teacher','student') NOT NULL,
   `profile` varchar(255) NOT NULL DEFAULT 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/59/User-avatar.svg/300px-User-avatar.svg.png',
-  `barcode` varchar(20) DEFAULT NULL,
+  `barcode` varchar(20) UNIQUE,
   PRIMARY KEY (`user_id`),
   CONSTRAINT `FK_SCH_ID` FOREIGN KEY (`school_id`) REFERENCES `school` (`school_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ;
