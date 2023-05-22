@@ -605,6 +605,11 @@ SELECT b.*, bc.*
 FROM book b
 JOIN book_copy bc ON b.ISBN = bc.book_id;
 
+CREATE OR REPLACE VIEW view_school_users AS
+SELECT u.*
+FROM user u
+WHERE u.role = 'teacher' OR u.role = 'student';
+
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
