@@ -60,9 +60,13 @@ PROCEDURE `AddBook` (IN `book_ISBN` VARCHAR(20), IN `title` VARCHAR(255), IN `au
 	    ELSE
 		select author_id from author where name=author_name INTO A_ID;
 	    END IF;
-
-	    INSERT INTO book  (ISBN, title, edition, no_pages, publisher_id,year_published, dewey_code, keywords)
-	    VALUES(book_ISBN, title, year_published, no_pages, P_ID,year_published, dewey_code, keywords);
+      IF(dewey_code = '800.xx') THEN
+	      INSERT INTO book  (ISBN, title, edition, no_pages, publisher_id,year_published, keywords)
+	      VALUES(book_ISBN, title, year_published, no_pages, P_ID,year_published, keywords);
+      ELSE
+        INSERT INTO book  (ISBN, title, edition, no_pages, publisher_id, dewey_code, year_published, keywords)
+	      VALUES(book_ISBN, title, year_published, no_pages, P_ID, dewey_code ,year_published, keywords);
+      END IF;
 
 	    INSERT INTO book_to_author (ISBN,author_id) 
 	    VALUES(book_ISBN, A_ID);
@@ -159,6 +163,56 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `ReturnBook` (IN `book_copy_id` INT(
 
 DELIMITER ;
 
+
+DELIMITER $
+CREATE DEFINER=`root`@`localhost` FUNCTION `db1initial`.`ISBN13to10`(isbn13 VARCHAR(50)) RETURNS varchar(50) CHARSET utf8 COLLATE utf8_general_ci
+BEGIN
+    DECLARE isbn10 	VARCHAR(13);
+    DECLARE i   	VARCHAR(13);
+    DECLARE sum 	INT;
+    DECLARE chk 	INT;
+    DECLARE chkchar 	VARCHAR(3);
+
+    IF (LENGTH(isbn13) = 10) THEN
+        RETURN isbn13;
+    ELSEIF (LENGTH(isbn13) != 13 || SUBSTRING(isbn13, 1, 3) != '978') THEN
+        RETURN isbn13;
+    END IF;
+
+    SET i = SUBSTRING(isbn13, 4, 10);
+
+    IF (LENGTH(i) < 10) THEN
+	SET i = LPAD(i, 10 , '0');
+    END IF;
+	
+    SET sum = 
+        1 * LEFT(i ,1) 
+        + 2 * RIGHT(LEFT(i ,2),1)
+        + 3 * RIGHT(LEFT(i ,3),1)
+        + 4 * RIGHT(LEFT(i ,4),1)
+        + 5 * RIGHT(LEFT(i ,5),1)
+        + 6 * RIGHT(LEFT(i ,6),1)
+        + 7 * RIGHT(LEFT(i ,7),1) 
+        + 8 * RIGHT(LEFT(i ,8),1) 
+        + 9 * RIGHT(LEFT(i ,9),1);   
+
+	SET chkchar = 'X';	
+    SET chk = sum % 11;
+    
+    IF (chk = 10) THEN
+        SET chk = 90980;        
+    END IF;
+	
+	IF (chk != 90980) THEN
+		SET chkchar = CAST(chk as CHAR);
+	END IF;
+	
+    RETURN CONCAT(SUBSTRING(isbn13, 4, 9), chkchar);
+END$
+
+DELIMITER ;
+
+
 -- --------------------------------------------------------
 
 --
@@ -225,7 +279,7 @@ CREATE TABLE `book` (
   `ISBN` varchar(20) NOT NULL,
   `title` varchar(255) NOT NULL,
   `edition` varchar(50) NOT NULL DEFAULT 'X.0',
-  `dewey_code` varchar(8) NOT NULL DEFAULT '800.0xxx' COMMENT 'https://en.wikipedia.org/wiki/List_of_Dewey_Decimal_classes ',
+  `dewey_code` varchar(8) NOT NULL DEFAULT  CONCAT(LPAD(FLOOR(RAND() * 999) , 3, '0'), '.', FLOOR(RAND() * 99)) COMMENT 'https://en.wikipedia.org/wiki/List_of_Dewey_Decimal_classes ',
   `no_pages` int(11) NOT NULL,
   `publisher_id` int(11) NOT NULL,
   `summary` longtext NOT NULL DEFAULT 'Summary of the Book',
