@@ -1,8 +1,10 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 from flask_mysqldb import MySQL
-import MySQLdb.cursors
+import MySQLdb.cursors, MySQLdb
 import re
 import pandas as pd
+import mysql.connector
+
 
 app = Flask(__name__)
 
@@ -37,6 +39,9 @@ def login_admin():
             session['loggedin'] = True
             session['user_id'] = account['user_id']
             session['username'] = account['username']
+            session['role'] = account['role']
+            session['barcode'] = account['barcode']
+            session['school_id'] = account['school_id']
             # Redirect to home page
             # return render_template('index_admin.html')
             return redirect('/admin/main')
@@ -66,6 +71,8 @@ def login_user():
             session['loggedin'] = True
             session['user_id'] = account['user_id']
             session['username'] = account['username']
+            session['role'] = account['role']
+            session['barcode'] = account['barcode']
             # Redirect to home page
             return render_template('index_user.html')
         else:
@@ -83,22 +90,16 @@ def go_to_main_user():
     return render_template('index_user.html')
 
 @app.route('/admin/profile_admin', methods=['GET', 'POST'])
-def profile_admin():
-    if 'loggedin' in session:
-        # viewUserId = request.args.get('user_id')   
-        # cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-        # cursor.execute('SELECT * FROM user WHERE user_id = %s', (viewUserId,))
-        # user = cursor.fetchone()
-        username = session['username']
-        query = "SELECT * FROM user WHERE username = %s"
-        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-        cursor.execute(query, (username,))
-        user = cursor.fetchone()
-        query_school = "SELECT school.school_name AS school_name FROM user JOIN school on user.school_id = school.school_id WHERE user.username = %s;"
-        cursor.execute(query_school,(username,))
-        school = cursor.fetchone()['school_name']
-        return render_template('profile_admin.html', user = user, school = school)
-    return redirect('login.html')
+def profile_admin(user_p):
+    username = user_p['username']
+    query = "SELECT * FROM user WHERE username = %s"
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute(query, (username,))
+    user = cursor.fetchone()
+    query_school = "SELECT school.school_name AS school_name FROM user JOIN school on user.school_id = school.school_id WHERE user.username = %s;"
+    cursor.execute(query_school,(username,))
+    school = cursor.fetchone()['school_name']
+    return render_template('profile_admin.html', user = user, school = school)
 
 @app.route('/user/profile', methods=['GET', 'POST'])
 def profile_user():
@@ -126,7 +127,7 @@ def search_book_user_redirect():
 
 @app.route('/user/books', methods=['GET'])
 def search_book_user():
-    schoolID = str(school_id())
+    schoolID = session['school_id']
     # view_name = "view_school_" + str(schoolID)
     query = """ 
         SELECT vs.title, a.name, vs.available_copies_number, vs.book_copies_number 
@@ -144,7 +145,7 @@ def search_book_user():
 def search_result():
     searchType = request.form['searchType']
     searchKey = request.form['searchKey']
-    schoolID = school_id()
+    schoolID = session['school_id']
     # view_name = "view_school_" + str(schoolID)
 
     if searchType == 'title':
@@ -205,19 +206,9 @@ def search_result():
     books = cursor.fetchall()
     return render_template('book_search_user.html', books=books)
 
-def school_id():
-    username = session['username']
-    query = "SELECT sc.school_id FROM school sc JOIN user u ON sc.school_id = u.school_id WHERE u.username = %s"
-    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-    cursor.execute(query, (username,))
-    school_id = cursor.fetchone()
-    if school_id:
-        schoolID = school_id['school_id']
-        return schoolID
-
 @app.route('/user/books/<book>', methods=['GET', 'POST'])
 def book_details_user(book):
-    schoolID = school_id()
+    schoolID = session['school_id']
     # view_name = "view_school_" + str(schoolID)
     query = """
     SELECT b.*, a.name
@@ -241,15 +232,17 @@ def search_book_admin_redirect():
 
 @app.route('/admin/books', methods=['GET'])
 def search_book_admin():
-    schoolID = school_id()
-    view_name = "view_school_" + str(schoolID)
+    schoolID = session['school_id']
+    # view_name = "view_school_" + str(schoolID)
     query = """ 
-        SELECT DISTINCT b.title, a.name, b.edition FROM {} b 
-        JOIN book_to_author b2a ON b.ISBN = b2a.ISBN 
-        JOIN author a ON b2a.author_id = a.author_id 
-        """.format(view_name)
+        SELECT vs.title, a.name, vs.available_copies_number, vs.book_copies_number 
+        FROM view_school vs
+	    JOIN book_to_author b2a ON b2a.ISBN = vs.ISBN
+	    JOIN author a ON a.author_id = b2a.author_id
+	    WHERE school_id = %s;
+        """
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-    cursor.execute(query)
+    cursor.execute(query, (schoolID ,))
     books = cursor.fetchall()
     return render_template('book_search_admin.html', books=books)
 
@@ -257,47 +250,58 @@ def search_book_admin():
 def admin_search_result():
     searchType = request.form['searchType']
     searchKey = request.form['searchKey']
-    schoolID = school_id()
-    view_name = "view_school_" + str(schoolID)
+    schoolID = session['school_id']
 
     if searchType == 'title':
         query = """ 
-        SELECT DISTINCT b.title, a.name, b.edition FROM {} b 
-        JOIN book_to_author b2a ON b.ISBN = b2a.ISBN 
-        JOIN author a ON b2a.author_id = a.author_id 
-        WHERE b.title LIKE %s
-        """.format(view_name)
+        SELECT DISTINCT vs.title, a.name, vs.available_copies_number, vs.book_copies_number 
+        FROM view_school vs 
+        JOIN book_to_author b2a ON b2a.ISBN = vs.ISBN 
+        JOIN author a ON a.author_id = b2a.author_id 
+        WHERE vs.school_id = {} AND vs.title LIKE %s
+        """.format(schoolID)
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
         cursor.execute(query, ('%' + searchKey + '%',))
     elif searchType == 'author':
         query = """ 
-        SELECT DISTINCT b.title, a.name, b.edition FROM {} b 
-        JOIN book_to_author b2a ON b.ISBN = b2a.ISBN 
-        JOIN author a ON b2a.author_id = a.author_id 
-        WHERE a.name LIKE %s
-        """.format(view_name)
+        SELECT DISTINCT vs.title, a.name, vs.available_copies_number, vs.book_copies_number 
+        FROM view_school vs 
+        JOIN book_to_author b2a ON b2a.ISBN = vs.ISBN 
+        JOIN author a ON a.author_id = b2a.author_id 
+        WHERE vs.school_id = {} AND a.name LIKE %s
+        """.format(schoolID)
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
         cursor.execute(query, ('%' + searchKey + '%',))
     elif searchType == 'category':
         query = """ 
-        SELECT DISTINCT b.title, a.name, b.edition  FROM {} b 
-        JOIN book_to_category b2c ON b.ISBN = b2c.ISBN 
+        SELECT DISTINCT vs.title, a.name, vs.available_copies_number, vs.book_copies_number 
+        FROM view_school vs 
+        JOIN book_to_category b2c ON vs.ISBN = b2c.ISBN 
         JOIN category c ON b2c.category_id = c.category_id 
-        JOIN book_to_author b2a ON b.ISBN = b2a.ISBN 
+        JOIN book_to_author b2a ON vs.ISBN = b2a.ISBN 
         JOIN author a ON b2a.author_id = a.author_id 
-        WHERE c.name LIKE %s
-        """.format(view_name)
+        WHERE vs.school_id = {} AND c.category LIKE %s
+        """.format(schoolID)
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
         cursor.execute(query, ('%' + searchKey + '%',))
     elif searchType == 'keyword':
-        return 'Invalid search type'
+        query = """ 
+        SELECT DISTINCT vs.title, a.name, vs.available_copies_number, vs.book_copies_number 
+        FROM view_school vs 
+        JOIN book_to_author b2a ON vs.ISBN = b2a.ISBN 
+        JOIN author a ON b2a.author_id = a.author_id
+        WHERE vs.school_id = {} AND vs.keywords LIKE %s
+        """.format(schoolID)
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute(query, ('%' + searchKey + '%',))
     elif searchType == 'ISBN':
         query = """ 
-        SELECT DISTINCT b.title, a.name, b.edition FROM {} b 
-        JOIN book_to_author b2a ON b.ISBN = b2a.ISBN 
-        JOIN author a ON b2a.author_id = a.author_id 
-        WHERE b.ISBN = %s
-        """.format(view_name)       
+        SELECT DISTINCT vs.title, a.name, vs.available_copies_number, vs.book_copies_number 
+        FROM view_school vs 
+        JOIN book_to_author b2a ON vs.ISBN = b2a.ISBN 
+        JOIN author a ON b2a.author_id = a.author_id
+        WHERE vs.school_id = {} AND vs.ISBN LIKE %s
+        """.format(schoolID)       
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
         cursor.execute(query, ('%' + searchKey + '%',))
     else:
@@ -308,17 +312,17 @@ def admin_search_result():
 
 @app.route('/admin/books/<book>', methods=['GET', 'POST'])
 def book_details_admin(book):
-    schoolID = school_id()
-    view_name = "view_school_" + str(schoolID)
+    schoolID = session['school_id']
+    # view_name = "view_school_" + str(schoolID)
     query = """
-    SELECT b.*, a.name, c.name AS cat
-    FROM {} b
+    SELECT b.*, a.name
+    FROM view_school b
     JOIN book_to_author b2a ON b.ISBN = b2a.ISBN
     JOIN author a ON b2a.author_id = a.author_id
-    JOIN book_to_category b2c ON b.ISBN = b2c.ISBN
-    JOIN category c ON b2c.category_id = c.category_id
-    WHERE b.title = %s
-    """.format(view_name)
+    # JOIN book_to_category b2c ON b.ISBN = b2c.ISBN
+    # JOIN category c ON b2c.category_id = c.category_id
+    WHERE b.title = %s AND b.school_id = {}
+    """.format(schoolID)
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
     cursor.execute(query, (book,))
     book_data = cursor.fetchone()
@@ -355,14 +359,149 @@ def book_details_admin(book):
 
 @app.route('/user/books/checkout/<book_copy_id>', methods=['GET'])
 def user_checkout_request(book_copy_id):
-    user_id = session['user_id']
-    query = "INSERT INTO hold(book_copy_id,user_id) VALUES (%s, %s);"
-    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-    cursor.execute(query, (book_copy_id, user_id, ))
-    mysql.connection.commit()
-    cursor.close()
-    flash('Το αίτημά σας καταχωρήθηκε', 'success')
+    try:
+        user_id = session['user_id']
+        
+        # Insert the hold record into the database
+        query = "INSERT INTO hold (book_copy_id, user_id) VALUES (%s, %s)"
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute(query, (book_copy_id, user_id,))
+        mysql.connection.commit()
+        cursor.close()
+        
+        flash('Το αίτημά σας καταχωρήθηκε', 'success')
+    except MySQLdb.Error as e:
+        error_code = e.args[0]
+        error_message = e.args[1]
+        
+        print(f"Error Code: {error_code}")
+        print(f"Error Message: {error_message}")
+
+        # flash (str(error_code) + str(error_message), 'danger')
+        if error_code == 1644:
+            flash('Σφάλμα: ' + error_message, 'danger')
+        else:
+            flash('Αναπάντεχο σφάλμα στη βάση δεδομένων', 'danger')
+    except Exception as e:
+        # Handle other general exceptions and display a generic error message
+        flash('Αναπάντεχο σφάλμα: ' + str(e), 'error')
+    
     return redirect(url_for('search_book_user'))
+
+@app.route('/search_user', methods=['GET', 'POST'])
+def search_users_redirect():
+    # Perform any necessary actions or data processing
+    # Redirect to the desired URL and render the template
+    return redirect(url_for('search_users'))
+
+@app.route('/admin/users', methods=['GET', 'POST'])
+def search_users():
+    schoolID = session['school_id']    
+
+    query = " SELECT vsu.* FROM view_school_users vsu WHERE vsu.school_id = %s;"
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute(query, (schoolID ,))
+    users = cursor.fetchall()
+    # user_role = []
+    # for user in users:
+    #     if user.role == 'teacher':
+    #         user_role.append(user_role,'teacher')
+    #     elif user.role == 'student':
+    #         user_role.append(user_role,'student')
+    return render_template('catalog_user.html', users=users)
+
+# @app.route('/user/books', methods=['POST'])
+# def search_result():
+#     searchType = request.form['searchType']
+#     searchKey = request.form['searchKey']
+#     schoolID = session['school_id']
+#     # view_name = "view_school_" + str(schoolID)
+
+#     if searchType == 'title':
+#         query = """ 
+#         SELECT DISTINCT vs.title, a.name, vs.available_copies_number, vs.book_copies_number 
+#         FROM view_school vs 
+#         JOIN book_to_author b2a ON b2a.ISBN = vs.ISBN 
+#         JOIN author a ON a.author_id = b2a.author_id 
+#         WHERE vs.school_id = {} AND vs.title LIKE %s
+#         """.format(schoolID)
+#         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+#         cursor.execute(query, ('%' + searchKey + '%',))
+#     elif searchType == 'author':
+#         query = """ 
+#         SELECT DISTINCT vs.title, a.name, vs.available_copies_number, vs.book_copies_number 
+#         FROM view_school vs 
+#         JOIN book_to_author b2a ON b2a.ISBN = vs.ISBN 
+#         JOIN author a ON a.author_id = b2a.author_id 
+#         WHERE vs.school_id = {} AND a.name LIKE %s
+#         """.format(schoolID)
+#         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+#         cursor.execute(query, ('%' + searchKey + '%',))
+#     elif searchType == 'category':
+#         query = """ 
+#         SELECT DISTINCT vs.title, a.name, vs.available_copies_number, vs.book_copies_number 
+#         FROM view_school vs 
+#         JOIN book_to_category b2c ON vs.ISBN = b2c.ISBN 
+#         JOIN category c ON b2c.category_id = c.category_id 
+#         JOIN book_to_author b2a ON vs.ISBN = b2a.ISBN 
+#         JOIN author a ON b2a.author_id = a.author_id 
+#         WHERE vs.school_id = {} AND c.category LIKE %s
+#         """.format(schoolID)
+#         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+#         cursor.execute(query, ('%' + searchKey + '%',))
+#     elif searchType == 'keyword':
+#         query = """ 
+#         SELECT DISTINCT vs.title, a.name, vs.available_copies_number, vs.book_copies_number 
+#         FROM view_school vs 
+#         JOIN book_to_author b2a ON vs.ISBN = b2a.ISBN 
+#         JOIN author a ON b2a.author_id = a.author_id
+#         WHERE vs.school_id = {} AND vs.keywords LIKE %s
+#         """.format(schoolID)
+#         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+#         cursor.execute(query, ('%' + searchKey + '%',))
+#     elif searchType == 'ISBN':
+#         query = """ 
+#         SELECT DISTINCT vs.title, a.name, vs.available_copies_number, vs.book_copies_number 
+#         FROM view_school vs 
+#         JOIN book_to_author b2a ON vs.ISBN = b2a.ISBN 
+#         JOIN author a ON b2a.author_id = a.author_id
+#         WHERE vs.school_id = {} AND vs.ISBN LIKE %s
+#         """.format(schoolID)       
+#         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+#         cursor.execute(query, ('%' + searchKey + '%',))
+#     else:
+#         return 'Invalid search type'
+    
+#     books = cursor.fetchall()
+#     return render_template('book_search_user.html', books=books)
+
+# @app.route('/user/books/<book>', methods=['GET', 'POST'])
+# def book_details_user(book):
+#     schoolID = session['school_id']
+#     # view_name = "view_school_" + str(schoolID)
+#     query = """
+#     SELECT b.*, a.name
+#     FROM view_school b
+#     JOIN book_to_author b2a ON b.ISBN = b2a.ISBN
+#     JOIN author a ON b2a.author_id = a.author_id
+#     # JOIN book_to_category b2c ON b.ISBN = b2c.ISBN
+#     # JOIN category c ON b2c.category_id = c.category_id
+#     WHERE b.title = %s AND b.school_id = {}
+#     """.format(schoolID)
+#     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+#     cursor.execute(query, (book,))
+#     book_data = cursor.fetchone()
+#     return render_template('book_details_user.html', book=book_data)
+
+
+
+
+
+
+
+
+
+
 
 # Route for updating the profile
 @app.route('/update_profile', methods=['POST'])
@@ -392,6 +531,107 @@ def update_profile():
     return redirect('/user/profile')
 
 
+@app.route('/pending_holds', methods=['GET','POST'])
+def pending_holds_redirect():
+    return redirect('/admin/pending_holds')
+  
+@app.route('/admin/pending_holds', methods=['GET','POST'])
+def pending_holds():
+    schoolID = session['school_id']
+    query = """ 
+        SELECT h.hold_id, h.user_id AS user_p, vs.title AS book, CONCAT(vsu.first_name, ' ', vsu.surname) AS name, h.hold_time AS time 
+        FROM hold h
+        JOIN view_school vs ON vs.copy_id = h.book_copy_id
+        JOIN view_school_users vsu ON vsu.user_id = h.user_id
+        WHERE vs.school_id = %s AND h.hold_status = 'pending'
+        ORDER BY h.hold_time DESC;
+    """
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute(query, (schoolID ,))
+    holds = cursor.fetchall()
+    return render_template('pending_holds.html', holds=holds)
+
+@app.route('/admin/update_hold_status', methods=['GET','POST'])
+def update_hold_status():
+    hold_id = request.form['hold_id']
+    action = request.form['action']
+    user_id = request.form['user_id']
+    book_copy_id = request.form['book_copy_id']
+
+    if action == 'accept':
+        update_query = """ 
+            call CheckoutBook(%s, %s);
+            """
+        cursor = mysql.connection.cursor()
+        cursor.execute(update_query, (book_copy_id,user_id,))
+    elif action == 'reject':
+        update_query = """ 
+            UPDATE hold
+            SET hold_status = 'cancelled'
+            WHERE hold_id = %s; 
+            """
+        cursor = mysql.connection.cursor()
+        cursor.execute(update_query, (hold_id,))
+
+    mysql.connection.commit()
+    cursor.close()
+    return redirect('/admin/pending_holds')
+
+# @app.route('/checkout_holds', methods=['GET','POST'])
+# def checkout_monitoring_redirect():
+#     return redirect('/admin/checkouts/checkout_monitoring')
+  
+# @app.route('/admin/checkouts/checkout_monitoring', methods=['GET','POST'])
+# def checkout_monitoring():
+#     schoolID = session['school_id']
+#     query = """ 
+#         SELECT h.hold_id, h.user_id AS user_p, vs.title AS book, CONCAT(vsu.first_name, ' ', vsu.surname) AS name, h.hold_time AS time 
+#         FROM hold h
+#         JOIN view_school vs ON vs.copy_id = h.book_copy_id
+#         JOIN view_school_users vsu ON vsu.user_id = h.user_id
+#         WHERE vs.school_id = %s AND h.hold_status = 'pending'
+#         ORDER BY h.hold_time DESC;
+#     """
+#     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+#     cursor.execute(query, (schoolID ,))
+#     checkouts = cursor.fetchall()
+#     return render_template('checkouts_monitoring.html', checkouts=checkouts)
+
+# @app.route('/admin/update_checkout_status', methods=['POST'])
+# def update_hold_status():
+#     hold_id = request.form['hold_id']
+#     action = request.form['action']
+    
+#     if action == 'accept':
+#         update_query = """ 
+#             UPDATE hold
+#             SET hold_status = 'completed'
+#             WHERE hold_id = %s; 
+#             """
+#     elif action == 'reject':
+#         update_query = """ 
+#             UPDATE hold
+#             SET hold_status = 'cancelled'
+#             WHERE hold_id = %s; 
+#             """
+#     cursor = mysql.connection.cursor()
+#     cursor.execute(update_query, (hold_id,))
+#     mysql.connection.commit()
+#     cursor.close()
+#     return redirect('/admin/pending_holds')
+
+@app.errorhandler(401)
+def unauthorized_error(error):
+    return render_template('401.html'), 401
+
+@app.errorhandler(404)
+def not_found_error(error):
+    return render_template('404.html'), 404
+
+@app.errorhandler(500)
+def internal_server_error(error):
+    return render_template('500.html'), 500
+
 @app.route('/logout')
 def logout():
     # Remove session data, this will log the user out
@@ -399,7 +639,7 @@ def logout():
    session.pop('user_id', None)
    session.pop('username', None)
    # Redirect to login page
-   return redirect(url_for('login'))
+   return render_template("login.html")
 
 @app.route("/")
 def main():

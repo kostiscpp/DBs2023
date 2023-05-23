@@ -16,7 +16,7 @@
 <body class="sb-nav-fixed">
     <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
         <!-- Navbar Brand-->
-        <a class="navbar-brand ps-3" href="index.html">Start Bootstrap</a>
+        <a class="navbar-brand ps-2" href="/admin/main">Δίκτυο Σχολικών <br> Βιβλιοθηκών</a>
         <!-- Sidebar Toggle-->
         <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle" href="#!"><i
                 class="fas fa-bars"></i></button>
@@ -36,12 +36,14 @@
                 <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown"
                     aria-expanded="false"><i class="fas fa-user fa-fw"></i></a>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                    <li><a class="dropdown-item" href="#!">Settings</a></li>
+                    <form action="{{ url_for('profile_admin') }}" method="POST">
+                        <li><a class="dropdown-item" href="{{ url_for('profile_admin') }}">Προφίλ</a></li>
+                    </form>
                     <li><a class="dropdown-item" href="#!">Activity Log</a></li>
                     <li>
                         <hr class="dropdown-divider" />
                     </li>
-                    <li><a class="dropdown-item" href="#!">Logout</a></li>
+                    <li><a class="dropdown-item" href="{{ url_for('logout') }}">Logout</a></li>
                 </ul>
             </li>
         </ul>
@@ -110,7 +112,7 @@
                             </nav>
                         </div>
                         <div class="sb-sidenav-menu-heading">Addons</div>
-                        <a class="nav-link" href="/admin/books">
+                        <a class="nav-link" href="/main/books">
                             <div class="sb-nav-link-icon"><i class="fas fa-chart-area"></i></div>
                             Βιβλία
                         </a>
@@ -121,26 +123,38 @@
                     </div>
                 </div>
                 <div class="sb-sidenav-footer">
-                    <div class="small">Logged in as:</div>
-                    Start Bootstrap
+                    <div class="small"> Είστε συνδεδεμένος/-η ως:</div>
+                        {{session.username}}
                 </div>
             </nav>
         </div>
         <div id="layoutSidenav_content">
             <main>
                 <div class="container-fluid px-4">
-                    <h1 class="mt-4">Dashboard</h1>
+                    <h1 class="mt-4">Αναζήτηση βιβλίων</h1>
                     <ol class="breadcrumb mb-4">
                         <li class="breadcrumb-item active">Dashboard</li>
                     </ol>
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}                       
+                        <div id="flash-messages" class="mt-4">
+                            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        </div>
+                        {% endfor %} 
+                    {% endif %}
+                    {% endwith %}
                     <h1 class="mt-4 mb-5" id="searchText">Πληκτρολογήστε τον τίτλο του βιβλίου</h1>
-                    <form method="POST" action="/admin/books">
+                    <form method="POST" action="/main/books">
                     <div class="row justify-content-center">
                         <div class="col-md-6">
                                 <div class="input-group input-group-lg mb-4" style="width: 120%;">
                                     <input type="text" class="form-control" id="searchKey" name="searchKey" placeholder="Αναζήτηση..."
                                         aria-label="Username" aria-describedby="basic-addon1">
-                                    <button class="btn btn-success" id="btnBookSearchAdmin" type="submit"><i
+                                    <button class="btn btn-success" id="btnBookSearch" type="submit"><i
                                             class="fas fa-search"></i></button>
                                 </div>
                         </div>
@@ -165,7 +179,7 @@
                         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
                         <script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
                         <div class="card-body">
-                            <table id="bookTableSchoolAdmin" class="table table-striped">
+                            <table id="bookTableSchool" class="table table-striped">
                                 <thead>
                                     <tr>
                                         <th class="w-30">Τίτλος</th>
@@ -178,7 +192,7 @@
                                     <tr>
                                         <td><a class="text-decoration-none link-success" href="{{ url_for('book_details_admin', book=book['title']) }}">{{ book.title }}</a></td>
                                         <td>{{ book.name }}</td>
-                                        <td>{{ book.edition }}</td>
+                                        <td>{{ book.available_copies_number }} / {{ book.book_copies_number }} </td>
                                         <!-- Populate other table columns with book data -->
                                     </tr>
                                     {% endfor %}
@@ -206,16 +220,17 @@
         crossorigin="anonymous"></script>
     <script src="../static/scripts.js"></script>
     <script src="../static/search_type_script.js"></script>
-    <script src="../static/search_book_admin_script.js"></script>
-    <script src="../static/searching_script_admin.js"></script>
+    <script src="../static/search_book_main_script.js"></script>
+    <script src="../static/searching_script.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js" crossorigin="anonymous"></script>
     <!-- <script src="assets/demo/chart-area-demo.js"></script>
     <script src="assets/demo/chart-bar-demo.js"></script> -->
     <script src="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/umd/simple-datatables.min.js"
         crossorigin="anonymous"></script>
    <script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-   <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.js"></script>
-   <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.25/js/dataTables.bootstrap5.js"></script>
+   <script src="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/umd/simple-datatables.min.js" crossorigin="anonymous"></script>
+   <!-- <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.js"></script>
+   <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.25/js/dataTables.bootstrap5.js"></script> -->
    <!-- <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.js"></script>
     <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.25/js/dataTables.bootstrap5.js"></script>
     <script src="js/datatables-simple-demo.js"></script> --> 

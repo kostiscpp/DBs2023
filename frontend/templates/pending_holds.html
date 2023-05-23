@@ -16,7 +16,7 @@
 <body class="sb-nav-fixed">
     <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
         <!-- Navbar Brand-->
-        <a class="navbar-brand ps-2" href="/user/main">Δίκτυο Σχολικών <br> Βιβλιοθηκών</a>
+        <a class="navbar-brand ps-2" href="/admin/main">Δίκτυο Σχολικών <br> Βιβλιοθηκών</a>
         <!-- Sidebar Toggle-->
         <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle" href="#!"><i
                 class="fas fa-bars"></i></button>
@@ -24,7 +24,7 @@
         <form class="d-none d-md-inline-block form-inline ms-auto me-0 me-md-3 my-2 my-md-0">
             <!-- <div class="input-group"> -->
             <!-- <input class="form-control" type="text" placeholder="Search for..." aria-label="Search for..." aria-describedby="btnNavbarSearch" /> -->
-            <button class="btn btn-success" id="btnNavbarSearch" type="button" onclick="window.location.href='{{ url_for('search_book_user_redirect') }}';">
+            <button class="btn btn-success" id="btnNavbarSearch" type="button" onclick="window.location.href='{{ url_for('search_book_admin_redirect') }}';">
                 <span class="search-text">Αναζήτηση Βιβλίων</span>
                 <i class="fas fa-search"></i>
             </button>
@@ -37,7 +37,7 @@
                     aria-expanded="false"><i class="fas fa-user fa-fw"></i></a>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                     <form action="{{ url_for('profile_user') }}" method="POST">
-                        <li><a class="dropdown-item" href="{{ url_for('profile_user') }}">Προφίλ</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('profile_admin') }}">Προφίλ</a></li>
                     </form>
                     <li><a class="dropdown-item" href="#!">Activity Log</a></li>
                     <li>
@@ -131,7 +131,7 @@
         <div id="layoutSidenav_content">
             <main>
                 <div class="container-fluid px-4">
-                    <h1 class="mt-4">Αναζήτηση βιβλίων</h1>
+                    <h1 class="mt-4">Αιτήματα δανεισμών</h1>
                     <ol class="breadcrumb mb-4">
                         <li class="breadcrumb-item active">Dashboard</li>
                     </ol>
@@ -162,7 +162,7 @@
                     <div class="row justify-content-center mb-4">
                         <div class="col-md-5">
                             <select class="form-select" id="searchType" name="searchType">
-                                <option value="title">Τίτλος</option>
+                                <option value="title">Ονοματεπώνυμο</option>
                                 <option value="author">Συγγραφέας</option>
                                 <option value="category">Κατηγορία</option>
                                 <option value="keyword">Λέξη-κλειδί</option>
@@ -179,21 +179,29 @@
                         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
                         <script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
                         <div class="card-body">
-                            <table id="bookTableSchool" class="table table-striped">
+                            <table id="bookTableHoldRequests" class="table table-striped">
                                 <thead>
                                     <tr>
-                                        <th class="w-30">Τίτλος</th>
-                                        <th>Συγγραφέας</th>
-                                        <th>Αντίτυπα</th>
+                                        <th class="w-30">Βιβλίο</th>
+                                        <th>Ονοματεπώνυμο</th>
+                                        <th>Ημερομηνία αιτήματος</th>
+                                        <th>Επιλογή</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {% for book in books %}
+                                    {% for hold in holds %}
                                     <tr>
-                                        <td><a class="text-decoration-none link-success" href="{{ url_for('book_details_user', book=book['title']) }}">{{ book.title }}</a></td>
-                                        <td>{{ book.name }}</td>
-                                        <td>{{ book.available_copies_number }} / {{ book.book_copies_number }} </td>
-                                        <!-- Populate other table columns with book data -->
+                                        <td><a class="text-decoration-none link-success" href="{{ url_for('book_details_admin', book=hold.book) }}">{{ hold.book }}</a></td>
+                                        <td><a class="text-decoration-none link-success" href="{{ url_for('profile_admin', user_p=hold.user_p) }}">{{ hold.name }}</a></td>
+                                        <td>{{ hold.time }} </td>
+                                        <td>
+                                            <form method="post" action="{{ url_for('update_hold_status') }}">
+                                                <input type="hidden" name="hold_id" value="{{ hold.hold_id }}">
+                                                <input type="hidden" name="user_id" value="{{ hold.user_p }}">
+                                                <input type="hidden" name="book_copy_id" value="{{ hold.book }}">
+                                                <button type="submit" name="action" value="accept" class="btn btn-success"><i class="fas fa-check"></i> Αποδοχή</button>
+                                                <button type="submit" name="action" value="reject" class="btn btn-danger"><i class="fas fa-times"></i> Απόρριψη</button>
+                                            </form>                        
                                     </tr>
                                     {% endfor %}
                                 </tbody>
