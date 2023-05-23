@@ -548,6 +548,19 @@ BEGIN
 
 END //
 
+CREATE TRIGGER tr_incr_availability_rej
+AFTER UPDATE ON hold
+FOR EACH ROW
+BEGIN
+    IF NEW.hold_status = 'rejected' AND old.hold_status = 'pending'
+    THEN
+        UPDATE book_copy
+        SET available_copies_number = available_copies_number - 1
+        WHERE copy_id = NEW.book_copy_id;
+    END IF;
+
+END //
+
 -- !!!!!!!!!!!!!!!!!! FOR FRONTEND !!!!!!!!!!!!!!!!!!!!!!
 -- CREATE TRIGGER tr_request
 -- AFTER INSERT ON hold
@@ -604,11 +617,6 @@ CREATE OR REPLACE VIEW view_school AS
 SELECT b.*, bc.*
 FROM book b
 JOIN book_copy bc ON b.ISBN = bc.book_id;
-
-CREATE OR REPLACE VIEW view_school_users AS
-SELECT u.*
-FROM user u
-WHERE u.role = 'teacher' OR u.role = 'student';
 
 COMMIT;
 
