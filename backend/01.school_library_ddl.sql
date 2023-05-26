@@ -16,6 +16,7 @@ USE db1initial;
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
 SET time_zone = "+00:00";
+SET GLOBAL event_scheduler="ON";
 
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
@@ -371,7 +372,7 @@ CREATE TABLE `user` (
 
 CREATE TABLE `checkout` (
   `checkout_id` int(11) NOT NULL AUTO_INCREMENT,
-  `checkout_time` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `checkout_time` datetime NOT NULL DEFAULT current_timestamp(),
   `return_time` datetime,
   `book_copy_id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
@@ -617,6 +618,20 @@ CREATE OR REPLACE VIEW view_school AS
 SELECT b.*, bc.*
 FROM book b
 JOIN book_copy bc ON b.ISBN = bc.book_id;
+
+CREATE OR REPLACE VIEW view_school_users AS
+SELECT u.* FROM user u WHERE u.role = 'student' OR u.role = 'teacher';
+
+CREATE EVENT update_all_h
+    ON SCHEDULE
+      EVERY 1 HOUR
+    DO
+      UPDATE hold SET hold_status = 'cancelled' WHERE hold_status = 'active' AND DATEDIFF(CURDATE(),expiration_time) > 0;
+CREATE EVENT update_all_ch
+    ON SCHEDULE
+      EVERY 1 HOUR
+    DO      
+      UPDATE checkout SET checkout_status = 'overdue' WHERE checkout_status = 'active' AND DATEDIFF(CURDATE(),checkout_time) > 7;
 
 COMMIT;
 
