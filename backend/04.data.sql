@@ -1,8 +1,8 @@
 INSERT INTO school (school_name, address, city, phone_number, email, principal_name, operator_name)
 VALUES
-('27ο Δημοτικό Σχολείο Ιωαννίνων','Ισαάκ Τάσσου 22','Ιωάννινα',2651068679, '27dimioa@sch.gr','Ζώνιος Σπύρος','Ρόζος Αριστείδης'),
-('ΠΡΟΤΥΠΟ ΛΥΚΕΙΟ ΖΩΣΙΜΑΙΑΣ ΣΧΟΛΗΣ ΙΩΑΝΝΙΝΩΝ','Πλατεία Αρχιεπισκόπου Σπυρίδωνος','Ιωάννινα',2651025013, 'mail@lyk-zosim.ioa.sch.gr','Αντωνίου Κωνσταντίνος','Γερογιάννη Χαρίκλεια'),
-('Πρότυπο Γενικό Λύκειο Ευαγγελικής Σχολής Σμύρνης','Λέσβου 4','Νέα Σμύρνη, Αττικής',2109333712, 'lykevag@sch.gr','Φανίδης Χρήστος','Χασάπης Σωτήριος'),
+('27ο Δημοτικό Σχολείο Ιωαννίνων','Ισαάκ Τάσσου 22','Ιωάννινα',2651068679, '27dimioa@sch.gr','Ζώνιος Σπύρος','Ρόζος Μάριος'),
+('ΠΡΟΤΥΠΟ ΛΥΚΕΙΟ ΖΩΣΙΜΑΙΑΣ ΣΧΟΛΗΣ ΙΩΑΝΝΙΝΩΝ','Πλατεία Αρχιεπισκόπου Σπυρίδωνος','Ιωάννινα',2651025013, 'mail@lyk-zosim.ioa.sch.gr','Αντωνίου Κωνσταντίνος','Κατσικόπουλος Κωστής'),
+('Πρότυπο Γενικό Λύκειο Ευαγγελικής Σχολής Σμύρνης','Λέσβου 4','Νέα Σμύρνη, Αττικής',2109333712, 'lykevag@sch.gr','Φανίδης Χρήστος','Μάλος Βασίλης'),
 ('Πρότυπο Λύκειο Αναβρύτων','Λεωφόρος Κηφισίας 184','Αμαρούσιον Αττικής',2106233215, 'mail@lyk-peir-anavr.att.sch.gr','Οτζάκογλου Θεόδωρος','Σωτηρόπουλος Νικόλαος');
 INSERT INTO school (school_id,school_name, address, city, phone_number, email, principal_name, operator_name)
 VALUES
@@ -11,10 +11,11 @@ VALUES
 UPDATE `school` SET `school_id` = '0' WHERE `school`.`school_id` = 5; 
 
 INSERT INTO `user` (`first_name`, `surname`, `username`, `pwd`, `birth_date`, `email`, `school_id`, `status`, `role`, `profile`, `barcode`) VALUES
- ('Αδμίνος','Α.','admin','pwd!','500-12-07','adminos@gmail.com',1,'active','admin','https://i.insider.com/602ee9ced3ad27001837f2ac?width=1000&format=jpeg&auto=webp','-42'),
+('Αδμίνος','Α.','admin','admin','500-12-07','adminos@gmail.com',0,'active','admin','https://i.insider.com/602ee9ced3ad27001837f2ac?width=1000&format=jpeg&auto=webp','-42'),
 ('Μάριος', 'Ρόζος', 'mario_rz', 'mario_rz', '2002-12-06', 'mariosrizzler@gmail.com', 1, 'active', 'operator', 'https://i.insider.com/602ee9ced3ad27001837f2ac?width=1000&format=jpeg&auto=webp', LPAD(FLOOR(RAND() * 999999) + 1, 8, '0')),
 ('Κωστής', 'Κατσικόπουλος', 'kkat', 'kkat', '2002-06-15', 'kkatgm@gmail.com', 2, 'active', 'operator', 'https://i.pinimg.com/236x/fb/d8/b5/fbd8b5d1c92c46e94e092ecc284a41da.jpg', LPAD(FLOOR(RAND() * 999999) + 1, 8, '0')),
 ('Βασίλης', 'Μάλος', 'billydot', 'billydot', '2002-06-15', 'billydot@gmail.com', 3, 'active', 'operator', 'https://i.pinimg.com/236x/fb/d8/b5/fbd8b5d1c92c46e94e092ecc284a41da.jpg', LPAD(FLOOR(RAND() * 999999) + 1, 8, '0')),
+('Νικόλαος','Σωτηρόπουλος', 'nicksotos','nicksotos','1999-08-07','nicksoto@gmail.com',4,'active','operator','https://i.insider.com/602ee9ced3ad27001837f2ac?width=1000&format=jpeg&auto=webp',LPAD(FLOOR(RAND() * 999999) + 1, 8, '0'));
 INSERT INTO `user` (`first_name`, `surname`, `username`, `pwd`, `birth_date`, `email`, `school_id`, `status`, `role`, `barcode`) VALUES
 ('Μαρια ', 'Παπαδοπούλου', 'maria', 'maria', '1956-01-30', 'bobu-figane78@yahoo.com', 1, 'active', 'teacher', LPAD(FLOOR(RAND() * 999999) + 1, 8, '0')),
 ('Ελενη ', 'Παππά', 'eleni', 'eleni', '1957-05-05', 'yagux_emizu74@hotmail.com', 1, 'active', 'teacher', LPAD(FLOOR(RAND() * 999999) + 1, 8, '0')),
