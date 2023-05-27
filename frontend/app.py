@@ -559,7 +559,7 @@ def pending_holds_redirect():
 def pending_holds():
     schoolID = session['school_id']
     query = """ 
-        SELECT h.hold_id, h.user_id, vs.title AS book, CONCAT(vsu.first_name, ' ', vsu.surname) AS name, h.hold_time AS time 
+        SELECT h.book_copy_id, h.hold_id, h.user_id, vs.title AS book, CONCAT(vsu.first_name, ' ', vsu.surname) AS name, h.hold_time AS time 
         FROM hold h
         JOIN view_school vs ON vs.copy_id = h.book_copy_id
         JOIN view_school_users vsu ON vsu.user_id = h.user_id
@@ -584,10 +584,10 @@ def update_hold_status():
         cursor = conn.cursor()
         cursor.execute(update_query, (book_copy_id, user_id,))
     elif action == 'reject':
-        update_query = """ 
+        update_query = """
             UPDATE hold
             SET hold_status = 'cancelled'
-            WHERE hold_id = %s; 
+            WHERE hold_id = %s;
             """
         cursor = conn.cursor()
         cursor.execute(update_query, (hold_id,))
@@ -597,25 +597,25 @@ def update_hold_status():
     return redirect('/admin/pending_holds')
 
 
-# @app.route('/checkout_holds', methods=['GET','POST'])
-# def checkout_monitoring_redirect():
-#     return redirect('/admin/checkouts/checkout_monitoring')
+@app.route('/checkout_redirect', methods=['GET','POST'])
+def checkout_monitoring_redirect():
+    return redirect(url_for('checkout_monitoring'))
 
-# @app.route('/admin/checkouts/checkout_monitoring', methods=['GET','POST'])
-# def checkout_monitoring():
-#     schoolID = session['school_id']
-#     query = """
-#         SELECT h.hold_id, h.user_id AS user_p, vs.title AS book, CONCAT(vsu.first_name, ' ', vsu.surname) AS name, h.hold_time AS time
-#         FROM hold h
-#         JOIN view_school vs ON vs.copy_id = h.book_copy_id
-#         JOIN view_school_users vsu ON vsu.user_id = h.user_id
-#         WHERE vs.school_id = %s AND h.hold_status = 'pending'
-#         ORDER BY h.hold_time DESC;
-#     """
-#     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-#     cursor.execute(query, (schoolID ,))
-#     checkouts = cursor.fetchall()
-#     return render_template('checkouts_monitoring.html', checkouts=checkouts)
+@app.route('/admin/checkouts/checkout_monitoring', methods=['GET','POST'])
+def checkout_monitoring():
+    schoolID = session['school_id']
+    query = """
+        SELECT ch.*, vs.title AS book, CONCAT(vsu.first_name,' ', vsu.surname) AS name
+        FROM checkout ch
+        JOIN view_school vs on vs.copy_id = ch.book_copy_id
+        JOIN view_school_users vsu on vsu.user_id = ch.user_id
+        WHERE vs.school_id = %s AND ch.checkout_status = 'active'
+        ORDER BY ch.checkout_time DESC;
+    """
+    cursor = conn.cursor()
+    cursor.execute(query, (schoolID,))
+    checkouts = cursor.fetchall()
+    return render_template('checkout_monitoring.html', checkouts=checkouts)
 
 @app.errorhandler(401)
 def unauthorized_error(error):
