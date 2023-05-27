@@ -601,7 +601,7 @@ BEGIN
     SET average_rating = (
         SELECT AVG(rating)
         FROM review
-        WHERE book_id = NEW.book_id
+        WHERE book_id = NEW.book_id AND review_status = 'accepted'
     )
     WHERE b.ISBN = NEW.book_id;
 END //
@@ -614,7 +614,7 @@ BEGIN
     SET average_rating = (
         SELECT AVG(rating)
         FROM review
-        WHERE book_id = NEW.book_id
+        WHERE book_id = NEW.book_id AND review_status = 'accepted'
     )
     WHERE b.ISBN = NEW.book_id;
 END //
