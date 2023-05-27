@@ -593,8 +593,21 @@ BEGIN
 
 END //
 
-CREATE TRIGGER update_average_rating
+CREATE TRIGGER update_average_rating_insert
 AFTER INSERT ON review
+FOR EACH ROW
+BEGIN
+    UPDATE book b
+    SET average_rating = (
+        SELECT AVG(rating)
+        FROM review
+        WHERE book_id = NEW.book_id
+    )
+    WHERE b.ISBN = NEW.book_id;
+END //
+
+CREATE TRIGGER update_average_rating_update
+AFTER UPDATE ON review
 FOR EACH ROW
 BEGIN
     UPDATE book b
