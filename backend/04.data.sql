@@ -6,16 +6,15 @@ VALUES
 ('Πρότυπο Λύκειο Αναβρύτων','Λεωφόρος Κηφισίας 184','Αμαρούσιον Αττικής',2106233215, 'mail@lyk-peir-anavr.att.sch.gr','Οτζάκογλου Θεόδωρος','Σωτηρόπουλος Νικόλαος');
 INSERT INTO school (school_id,school_name, address, city, phone_number, email, principal_name, operator_name)
 VALUES
-(0,'Δίκτυο Σχολικών Βιβλιοθηκών','Λεωφόρος Αλεξάνδρας 42','Αθήνα',26510682323, 'genlib@sch.gr','','');
+(0,'Δίκτυο Σχολικών Βιβλιοθηκών','Λεωφόρος Αλεξάνδρας 42','Αθήνα',26510682323, 'genlib@sch.gr','Στέφανος Καραναστάσης','Αδμίνος Α.');
 
 UPDATE `school` SET `school_id` = '0' WHERE `school`.`school_id` = 5; 
 
 INSERT INTO `user` (`first_name`, `surname`, `username`, `pwd`, `birth_date`, `email`, `school_id`, `status`, `role`, `profile`, `barcode`) VALUES
-('Αδμίνος', 'Α.', 'admin', 'admin', '2000-11-05', 'adminos@gmail.com', 0, 'active', 'admin', 'https://i.insider.com/602ee9ced3ad27001837f2ac?width=1000&format=jpeg&auto=webp', LPAD(FLOOR(RAND() * 999999) + 1, 8, '0')),
 ('Μάριος', 'Ρόζος', 'mario_rz', 'mario_rz', '2002-12-06', 'mariosrizzler@gmail.com', 1, 'active', 'operator', 'https://i.insider.com/602ee9ced3ad27001837f2ac?width=1000&format=jpeg&auto=webp', LPAD(FLOOR(RAND() * 999999) + 1, 8, '0')),
 ('Κωστής', 'Κατσικόπουλος', 'kkat', 'kkat', '2002-06-15', 'kkatgm@gmail.com', 2, 'active', 'operator', 'https://i.pinimg.com/236x/fb/d8/b5/fbd8b5d1c92c46e94e092ecc284a41da.jpg', LPAD(FLOOR(RAND() * 999999) + 1, 8, '0')),
 ('Βασίλης', 'Μάλος', 'billydot', 'billydot', '2002-06-15', 'billydot@gmail.com', 3, 'active', 'operator', 'https://i.pinimg.com/236x/fb/d8/b5/fbd8b5d1c92c46e94e092ecc284a41da.jpg', LPAD(FLOOR(RAND() * 999999) + 1, 8, '0')),
-('Νικόλαος', 'Σωτηρόπουλος', 'nicksot', 'nicksot', '1969-06-13', 'nicksot@hotmail.gr', 4, 'active', 'operator', 'https://i.insider.com/602ee9ced3ad27001837f2ac?width=1000&format=jpeg&auto=webp', LPAD(FLOOR(RAND() * 999999) + 1, 8, '0'));
+('Μητσος', 'Κονιαρης', 'mitsigun', 'mitsigun', '1900-06-13', 'mitskon@hotmail.gr', 4, 'active', 'operator', 'https://pyxis.nymag.com/v1/imgs/dd9/a1a/06a5117322a7b2cf158e0dc9d5f7df918e-complex.rsquare.w330.png', LPAD(FLOOR(RAND() * 999999) + 1, 8, '0'));
 INSERT INTO `user` (`first_name`, `surname`, `username`, `pwd`, `birth_date`, `email`, `school_id`, `status`, `role`, `barcode`) VALUES
 ('Μαρια ', 'Παπαδοπούλου', 'maria', 'maria', '1956-01-30', 'bobu-figane78@yahoo.com', 1, 'active', 'teacher', LPAD(FLOOR(RAND() * 999999) + 1, 8, '0')),
 ('Ελενη ', 'Παππά', 'eleni', 'eleni', '1957-05-05', 'yagux_emizu74@hotmail.com', 1, 'active', 'teacher', LPAD(FLOOR(RAND() * 999999) + 1, 8, '0')),
@@ -87,7 +86,7 @@ INSERT INTO `user` (`first_name`, `surname`, `username`, `pwd`, `birth_date`, `e
 ('Αικατερίνη', 'Σταματίου', 'katerina', 'katerina', '1990-03-19', 'katerina@example.com', 4, 'active', 'student', LPAD(FLOOR(RAND() * 999999) + 1, 8, '0')),
 ('Θεόδωρος', 'Σωτηρίου', 'theodoros', 'theodoros', '1983-07-22', 'theodoros@example.com', 4, 'active', 'teacher', LPAD(FLOOR(RAND() * 999999) + 1, 8, '0')),
 ('Ελευθερία', 'Γεωργιάδου', 'eleftheria61', 'eleftheria61', '2014-08-27', 'eleftheria.georgiadou@example.com', 4, 'active', 'student', LPAD(FLOOR(RAND() * 999999) + 1, 8, '0'));
-call AddBook( '9780552149518','Undomestic Goddess','Brown, Dan','Corgi Books','2004','Crime, Thriller & Adventure','Chick lit, Legal career,Domestic staff,Transformation',1,1,'800.xx',(FLOOR(RAND() * 300)+100));
+call AddBook( '9780552772747','Undomestic Goddess','Brown, Dan','Corgi Books','2004','Crime, Thriller & Adventure','Chick lit, Legal career,Domestic staff,Transformation',1,1,'800.xx',(FLOOR(RAND() * 300)+100));
 call AddBook( '9780747532743','Harry Potter and the Philosophers Stone#','Rowling, J. K.','Bloomsbury Publishing PLC','1997','Children''s Fiction','Wizardry, Hogwarts, Friendship, Adventure',1,1,'800.xx',(FLOOR(RAND() * 300)+100));
 call AddBook( '9780747538486','Harry Potter and the Chamber of Secrets#','Rowling, J. K.','Bloomsbury Publishing PLC','1999','Children''s Fiction','Wizardry, Hogwarts, Friendship, Adventure',1,1,'800.xx',(FLOOR(RAND() * 300)+100));
 call AddBook( '9780552150736','Angels and Demons','Brown, Dan','Corgi Books','2003','Crime, Thriller & Adventure','Angels, Demons, Vatican, Thriller',1,1,'800.xx',(FLOOR(RAND() * 300)+100));
@@ -190,7 +189,7 @@ call AddBook( '9781846053443','Dear Fatty','French, Dawn','Century','2008','Auto
 -- Create random no_pages per book
 -- lpad(rand() * 1000000, 1, '0') -- Random 3digits
 -- insert to school_id = 2
-call AddBook( '9780552149518','Undomestic Goddess','Brown, Dan','Corgi Books','2004','Crime, Thriller & Adventure','Undomestic Goddess, Sophie Kinsella, Chick lit, Humor, Romance',2,1,'800.xx',(FLOOR(RAND() * 300)+100));
+call AddBook( '9780552772747','Undomestic Goddess','Brown, Dan','Corgi Books','2004','Crime, Thriller & Adventure','Undomestic Goddess, Sophie Kinsella, Chick lit, Humor, Romance',2,1,'800.xx',(FLOOR(RAND() * 300)+100));
 call AddBook( '9780747532743','Harry Potter and the Philosopher''s Stone','Rowling, J. K.','Bloomsbury Publishing PLC','1997','Children''s Fiction','Wizardry, Hogwarts, Friendship, Adventure',2,1,'800.xx',(FLOOR(RAND() * 300)+100));
 call AddBook( '9780747538486','Harry Potter and the Chamber of Secrets','Rowling, J. K.','Bloomsbury Publishing PLC','1999','Children''s Fiction','Wizardry, Hogwarts, Friendship, Adventure',2,1,'800.xx',(FLOOR(RAND() * 300)+100));
 call AddBook( '9780552150736','Angels and Demons','Brown, Dan','Corgi Books','2003','Crime, Thriller & Adventure','Angels, Demons, Vatican, Thriller',2,1,'800.xx',(FLOOR(RAND() * 300)+100));
@@ -251,7 +250,7 @@ call AddBook( '9781846051616','The Sound of Laughter','Kay, Peter','Century','20
 call AddBook( '9780718147709','Jamies Italy','Oliver, Jamie','Michael Joseph','2005','Picture Books','Cookbook, Italian cuisine, Recipes, Travelogue',3,1,'800.xx',(FLOOR(RAND() * 300)+100));
 call AddBook( '9780755307500','Small Island','Levy, Andrea','Headline Review','2004','General & Literary Fiction','Historical fiction, Post-war, Immigration, Identity',3,1,'800.xx',(FLOOR(RAND() * 300)+100));
 call AddBook( '9780141030142','Memory Keeper''s Daughter,The','Edwards, Kim','Penguin Books','2007','General & Literary Fiction','κονιαρημικροτσουσουνε',3,1,'800.xx',(FLOOR(RAND() * 300)+100));
-call AddBook( '9780007110926','Billy Connolly','Stephenson, Pamela','HarperCollins Publishers','2002','Picture Books','Comedy, Autobiography, Scottish, Entertainer',3,59,'800.xx',(FLOOR(RAND() * 300)+100));
+call AddBook( '9780007110926','Billy Connolly','Stephens978-0552772747on, Pamela','HarperCollins Publishers','2002','Picture Books','Comedy, Autobiography, Scottish, Entertainer',3,59,'800.xx',(FLOOR(RAND() * 300)+100));
 call AddBook( '9780330448444','The House at Riverton','Morton, Kate','Pan Books','2007','General & Literary Fiction','Historical fiction, Mystery, Secrets, English countryside',3,60,'800.xx',(FLOOR(RAND() * 300)+100));
 call AddBook( '9780747561071','Harry Potter and the Order of the Phoenix#','Rowling, J. K.','Bloomsbury Publishing PLC','2004','Children''s Fiction','Wizardry, Hogwarts, Friendship, Adventure',3,61,'800.xx',(FLOOR(RAND() * 300)+100));
 call AddBook( '9780701181840','Nigella Express','Lawson, Nigella','Chatto & Windus','2007','Fitness & Diet','Cooking, Quick and Easy, Recipes, Nigella Lawson',3,62,'800.xx',(FLOOR(RAND() * 300)+100));
@@ -293,7 +292,7 @@ call AddBook( '9780552997034','Down Under','Bryson, Bill','Black Swan','2001','G
 call AddBook( '9780099506928','A Spot of Bother','Haddon, Mark','Vintage','2007','General & Literary Fiction','A Spot of Bother, Mark Haddon, Fiction, Family drama, Humor',3,97,'800.xx',(FLOOR(RAND() * 300)+100));
 call AddBook( '9781846053443','Dear Fatty','French, Dawn','Century','2008','Autobiography','Dear Fatty, Dawn French, Memoir, Autobiography, Comedy, Personal anecdotes',3,98,'800.xx',(FLOOR(RAND() * 300)+100));
 -- school_id = 4
-call AddBook( '9780552149518','Undomestic Goddess','Brown, Dan','Corgi Books','2004','Crime, Thriller & Adventure','Undomestic Goddess, Sophie Kinsella, Chick lit, Humor, Romance',4,1,'800.xx',(FLOOR(RAND() * 300)+100));
+call AddBook( '9780552772747','Undomestic Goddess','Brown, Dan','Corgi Books','2004','Crime, Thriller & Adventure','Undomestic Goddess, Sophie Kinsella, Chick lit, Humor, Romance',4,1,'800.xx',(FLOOR(RAND() * 300)+100));
 call AddBook( '9780747532743','Harry Potter and the Philosopher''s Stone#','Rowling, J. K.','Bloomsbury Publishing PLC','1997','Children''s Fiction','Wizardry, Hogwarts, Friendship, Adventure',4,1,'800.xx',(FLOOR(RAND() * 300)+100));
 call AddBook( '9780747538486','Harry Potter and the Chamber of Secrets#','Rowling, J. K.','Bloomsbury Publishing PLC','1999','Children''s Fiction','Wizardry, Hogwarts, Friendship, Adventure',4,1,'800.xx',(FLOOR(RAND() * 300)+100));
 call AddBook( '9780552150736','Angels and Demons#','Brown, Dan','Corgi Books','2003','Crime, Thriller & Adventure','Angels, Demons, Vatican, Thriller',4,1,'800.xx',(FLOOR(RAND() * 300)+100));
