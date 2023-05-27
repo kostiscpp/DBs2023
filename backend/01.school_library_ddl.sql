@@ -288,6 +288,7 @@ CREATE TABLE `book` (
   `language` varchar(40) NOT NULL DEFAULT 'English',
   `keywords` varchar(255) NOT NULL DEFAULT 'Key words of the book',
   `year_published` INT(4) NOT NULL,
+  `average_rating` decimal(3,2) NOT NULL DEFAULT 0.00,
   PRIMARY KEY (ISBN),
   CONSTRAINT `FK_PUBLISHER_ID` FOREIGN KEY (publisher_id) REFERENCES `publisher` (publisher_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ;
@@ -592,7 +593,18 @@ BEGIN
 
 END //
 
-
+CREATE TRIGGER update_average_rating
+AFTER INSERT ON review
+FOR EACH ROW
+BEGIN
+    UPDATE book b
+    SET average_rating = (
+        SELECT AVG(rating)
+        FROM review
+        WHERE book_id = NEW.book_id
+    )
+    WHERE b.ISBN = NEW.book_id;
+END //
 -- CREATE TRIGGER tr_lock_availability_for_pending
 -- BEFORE UPDATE ON hold
 -- FOR EACH ROW
