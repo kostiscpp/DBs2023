@@ -487,3 +487,34 @@ UPDATE book SET summary = 'Bella?'' Edward''s soft voice came from behind me. I 
 UPDATE book SET summary = 'Published this autumn Guinness World Records 2009 continues to build on the intriguing, informative, inspiring and instructional records and superlatives that have made Guinness World Records one of the most famous brands and books in the world. New features of the book include: Eye-catching ''sunburst'' holographic cover; 100 percent new photographs; 3D PHOTOGRAPHIC FEATURES!; A pair of 3D glasses to view more than 20 3-D photographs throughout the rest of the book; 60 percent new and updated records; Gatefold pages; New urban design; and New approaches to popular themes.', no_pages = 287 WHERE ISBN = '9781904994367';
 UPDATE book SET summary = 'The 2010 edition of the most famous book of world records, including the top 100 record-breakers of the decade, and the "unbreakable" records that have never been beaten.', no_pages = 287 WHERE ISBN = '9781904994497';
 UPDATE book SET summary = 'Twilight tempted the imagination ...New Moon made readers thirsty for more ...Eclipse turned the saga into a worldwide phenomenon ...And now the book that everyone has been waiting for ...Breaking Dawn. In the much anticipated fourth book in Stephenie Meyer''s love story, questions will be answered and the fate of Bella and Edward will be revealed. -- Publisher description.', no_pages = 756 WHERE ISBN = '9781905654284';
+UPDATE category SET name = 'Crime' WHERE category_id = 1;
+UPDATE category SET name = 'General Fiction' WHERE category_id = 4;
+UPDATE category SET name = 'Fitness' WHERE category_id = 7;
+UPDATE category SET name ='Romance' WHERE category_id = 10;
+UPDATE category SET name ='Classics' WHERE category_id = 11;
+UPDATE category SET name ='Dystopian' WHERE category_id = 12;
+UPDATE category SET name ='Adventure' WHERE category_id = 13;
+UPDATE category SET name ='Inspirational' WHERE category_id = 14;
+UPDATE category SET name ='Magical Realism' WHERE category_id = 15;
+UPDATE category SET name ='Science Fiction' WHERE category_id = 16;
+UPDATE category SET name ='Historical' WHERE category_id = 17;
+UPDATE category SET name ='Horror' WHERE category_id = 18;
+UPDATE category SET name ='Poetry' WHERE category_id = 19;
+
+INSERT INTO category (name) VALUES ('Thriller');
+INSERT INTO book_to_category (ISBN, category_id) 
+SELECT bc.ISBN,20 FROM book_to_category bc WHERE bc.category_id = 1;
+INSERT INTO book_to_category (ISBN, category_id) 
+SELECT bc.ISBN,13 FROM book_to_category bc WHERE bc.category_id = 1;
+INSERT INTO category (name) VALUES ('Literary Fiction');
+INSERT INTO book_to_category (ISBN, category_id) 
+SELECT bc.ISBN,21 FROM book_to_category bc WHERE bc.category_id = 4;
+INSERT INTO category (name) VALUES ('Diet');
+INSERT INTO book_to_category (ISBN, category_id) 
+SELECT bc.ISBN,22 FROM book_to_category bc WHERE bc.category_id = 7;
+INSERT INTO category (name) VALUES ('Fiction');
+INSERT INTO book_to_category (ISBN, category_id) 
+SELECT bc.ISBN,23 FROM book_to_category bc WHERE bc.category_id >= 10 AND bc.category_id <= 18;
+INSERT INTO category (name) VALUES ('Epic');
+INSERT INTO book_to_category (ISBN, category_id) 
+SELECT bc.ISBN,24 FROM book_to_category bc WHERE bc.category_id = 19;
