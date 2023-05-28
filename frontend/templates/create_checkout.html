@@ -8,8 +8,8 @@
     <meta name="description" content="" />
     <meta name="author" content="" />
     <title>Δίκτυο Σχολικών Βιβλιοθηκών</title>
-    <link href="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/style.min.css" rel="stylesheet" />
     <link href="../../static/index_style.css" rel="stylesheet" type="text/css"/>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
 </head>
 
@@ -131,7 +131,7 @@
         <div id="layoutSidenav_content">
             <main>
                 <div class="container-fluid px-4">
-                    <h1 class="mt-4">Παρακολούθηση ενεργών δανεισμών</h1>
+                    <h1 class="mt-4">Επιστροφή βιβλίου</h1>
                     <ol class="breadcrumb mb-4">
                         <li class="breadcrumb-item active">Dashboard</li>
                     </ol>
@@ -147,58 +147,57 @@
                         {% endfor %}
                     {% endif %}
                     {% endwith %}
-                    <h1 class="mt-4 mb-5" id="searchText">Πληκτρολογήστε τον τίτλο του βιβλίου</h1>
-                    <form method="POST" action="/user/books">
-                    <div class="row justify-content-center">
-                        <div class="col-md-6">
-                                <div class="input-group input-group-lg mb-4" style="width: 120%;">
-                                    <input type="text" class="form-control" id="searchKey" name="searchKey" placeholder="Αναζήτηση..."
-                                        aria-label="Username" aria-describedby="basic-addon1">
-                                    <button class="btn btn-success" id="btnBookSearch" type="submit"><i
-                                            class="fas fa-search"></i></button>
+                </div>
+                <div class = "row">
+                <div class="col-md-4 border-right">
+                    <div class="p-3 py-5">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h4 class="text-right">Πληροφορίες Βιβλίου</h4>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-md-12">
+                                <label class="labels" for="isbnInput">ISBN</label>
+                                <div class="input-group input-group mb-4" style="width: 100%;">
+                                    <input type="text" class="form-control" id="isbnInput" placeholder="Εισάγετε το ISBN">
+                                    <button class="btn btn-success" id="bookAutocompleteBtn" type="button"><i class="fas fa-search"></i></button>
                                 </div>
+                            </div>
+                            <div class="col-md-12"><label class="labels" for="bookTitle">Βιβλίο</label><input type="text" class="form-control" placeholder="Τίτλος" id="bookTitle" readonly> </div>
+                            <div class="col-md-12"><label class="labels">Συγγραφείς</label><input type="text" class="form-control" placeholder="Συγγραφέας" id="bookAuthor" readonly ></div>
+                            <div class="col-md-12"><label class="labels">Αριθμός Σελίδων</label><input type="number" class="form-control" placeholder="Αριθμός σελίδων" id="bookPages" readonly></div>
+                            <div class="col-md-12"><label class="labels">Έτος έκδοσης</label><input type="text" class="form-control" placeholder="Έτος έκδοσης" id="bookYear" readonly></div>
                         </div>
                     </div>
-                    <div class="row justify-content-center mb-4">
-                        <div class="col-md-5">
-                            <select class="form-select" id="searchType" name="searchType">
-                                <option value="title">Ονοματεπώνυμο</option>
-                                <option value="author">Συγγραφέας</option>
-                                <option value="category">Κατηγορία</option>
-                                <option value="keyword">Λέξη-κλειδί</option>
-                                <option value="ISBN">ISBN</option>
-                            </select>
+                </div>
+                <div class="col-md-5 border-right">
+                    <div class="p-3 py-5">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h4 class="text-right">Πληροφορίες Χρήστη</h4>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-md-12">
+                                <label class="labels">Barcode</label>
+                                <div class="input-group input-group mb-4" style="width: 100%;">
+                                    <input type="text" class="form-control" id="barcodeInput" placeholder="Εισάγετε το barcode" >
+                                    <button class="btn btn-success" id="userAutocompleteBtn" type="button"><i class="fas fa-search"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                              <div class="col-md-6"><label class="labels">Όνομα</label><input type="text" class="form-control" id="userFirstName" placeholder="Όνομα" readonly></div>
+                              <div class="col-md-6"><label class="labels">Επώνυμο</label><input type="text" class="form-control" id="userSurname" placeholder="Επώνυμο" readonly></div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-md-12"><label class="labels">Επάγγελμα</label><input type="text" class="form-control" id="userRole" placeholder="Επάγγελμα" readonly></div>
+                            <div class="col-md-12"><label class="labels">Σχολείο</label><input type="text" class="form-control" id="userSchool" placeholder="Όνομα σχολείου" readonly></div>
+                            <div class="col-md-12"><label class="labels">Ηλεκτρονική διεύθυνση</label><input type="text" class="form-control" id="userEmail" placeholder="Ηλεκτρονική διεύθυνση" readonly></div>
                         </div>
                     </div>
-                </form>
-                    <div class="card mb-4">
-                        <div class="card-header">
-                            <i class="fas fa-table me-1"></i>
-                            Βιβλία
-                        </div>
-                        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-                        <script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
-                        <div class="card-body">
-                            <table id="bookTableHoldRequests" class="table table-striped">
-                                <thead>
-                                    <tr>
-                                        <th class="w-30">Βιβλίο</th>
-                                        <th>Ονοματεπώνυμο</th>
-                                        <th>Ημερομηνία αιτήματος</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for checkout in checkouts %}
-                                    <tr>
-                                        <td><a class="text-decoration-none link-success">{{ checkout.book }}</a></td>
-                                        <td><a class="text-decoration-none link-success">{{ checkout.name }}</a></td>
-                                        <td>{{ checkout.checkout_time }} </td>
-                                        <td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
+                </div>
+                </div>
+                <div class="row">
+                    <div class="mt-4 text-center">
+                        <button class="btn btn-success profile-button" type="button">Δανεισμός</button>
                     </div>
                 </div>
             </main>
@@ -218,15 +217,18 @@
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
         crossorigin="anonymous"></script>
-    <script src="../static/scripts.js"></script>
-    <script src="../static/search_type_script.js"></script>
-    <script src="../static/search_book_user_script.js"></script>
-    <script src="../static/searching_script.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/umd/simple-datatables.min.js"
-        crossorigin="anonymous"></script>
-   <script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-   <script src="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/umd/simple-datatables.min.js" crossorigin="anonymous"></script>
+    <script src="../../static/scripts.js"></script>
+    <script src="../../static/checkout_autocomplete.js"></script>
+{#    <script src="../static/search_type_script.js"></script>#}
+{#    <script src="../static/search_book_user_script.js"></script>#}
+{#    <script src="../static/searching_script.js"></script>#}
+{#    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js" crossorigin="anonymous"></script>#}
+{#    <!-- <script src="assets/demo/chart-area-demo.js"></script>#}
+{#    <script src="assets/demo/chart-bar-demo.js"></script> -->#}
+{#    <script src="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/umd/simple-datatables.min.js"#}
+{#        crossorigin="anonymous"></script>#}
+{#   <script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>#}
+{#   <script src="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/umd/simple-datatables.min.js" crossorigin="anonymous"></script>#}
 </body>
 
 </html>

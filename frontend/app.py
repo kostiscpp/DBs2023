@@ -6,14 +6,6 @@ app = Flask(__name__)
 
 app.secret_key = 'your secret key'
 
-# Enter your database connection details below
-# app.config['MYSQL_HOST'] = 'localhost'
-# app.config['MYSQL_USER'] = 'root'
-# app.config['MYSQL_PASSWORD'] = ''
-# app.config['MYSQL_DB'] = 'db1initial'
-
-# Intialize MySQL
-# mysql = MySQL(app)
 conn = pymysql.connect(
     host='localhost',
     user='root',
@@ -22,7 +14,6 @@ conn = pymysql.connect(
     charset='utf8mb4',
     cursorclass=pymysql.cursors.DictCursor
 )
-
 
 @app.route('/admin/login', methods=['GET', 'POST'])
 def login_admin():
@@ -596,7 +587,6 @@ def update_hold_status():
     cursor.close()
     return redirect('/admin/pending_holds')
 
-
 @app.route('/checkout_redirect', methods=['GET','POST'])
 def checkout_monitoring_redirect():
     return redirect(url_for('checkout_monitoring'))
@@ -615,7 +605,88 @@ def checkout_monitoring():
     cursor = conn.cursor()
     cursor.execute(query, (schoolID,))
     checkouts = cursor.fetchall()
-    return render_template('checkout_monitoring.html', checkouts=checkouts)
+    no_checkouts = False
+    if len(checkouts) == 0:
+        no_checkouts = True
+    return render_template('checkout_monitoring.html', checkouts=checkouts, no_checkouts=no_checkouts)
+
+@app.route('/admin/return_book', methods=['GET', 'POST'])
+def return_book_redirect():
+    return redirect(url_for(return_book))
+
+@app.route('/admin/return_book/result', methods=['GET', 'POST'])
+def return_book():
+    barcode = str(request.form['barcode'])
+    schoolID = session['school_id']
+    print(barcode)
+    print(schoolID)
+    query = """
+        SELECT c.checkout_time AS time, c.checkout_status AS status, vsu.user_id, 
+            CONCAT(vsu.first_name,' ', vsu.surname) AS name, vsu.barcode, vs.title, vs.copy_id
+        FROM checkout c
+        JOIN view_school_users vsu on vsu.user_id = c.user_id
+        JOIN view_school vs on vs.copy_id = c.book_copy_id
+        WHERE vsu.barcode = %s AND vsu.school_id = %s 
+        AND c.checkout_status = 'active' OR c.checkout_status = 'overdue';
+    """
+    cursor = conn.cursor()
+    cursor.execute(query, (barcode, schoolID,))
+    checkouts = cursor.fetchall()
+    return render_template('return_book.html', checkouts=checkouts)
+
+@app.route('/admin/update_return_book', methods=['GET', 'POST'])
+def update_return_book():
+    user_id = request.form['user_id']
+    book_copy_id = request.form['book_copy_id']
+    update_query = "CALL ReturnBook(%s, %s);"
+    cursor = conn.cursor()
+    cursor.execute(update_query, (book_copy_id, user_id,))
+    conn.commit()
+    cursor.close()
+    return redirect('/admin/return_book')
+
+@app.route('/create_checkout_redirect')
+def create_checkout_redirect():
+    return redirect(url_for('create_checkout'))
+
+@app.route('/admin/create_checkout')
+def create_checkout():
+    return render_template('create_checkout.html')
+
+@app.route('/checkout/autocomplete/book', methods=['GET','POST'])
+def autocomplete_book():
+    isbn = request.args.get('isbn')  # Retrieve the 'isbn' parameter from the query string
+    schoolID = session['school_id']
+    query = """
+        SELECT vs.ISBN, vs.title, vs.no_pages AS pages, vs.year_published AS year, a.name AS author
+        FROM view_school vs
+        JOIN book_to_author bta on vs.ISBN = bta.ISBN
+        JOIN author a on bta.author_id = a.author_id
+        WHERE vs.ISBN = %s AND vs.school_id = %s ;
+    """
+    cursor = conn.cursor()
+    cursor.execute(query, (isbn, schoolID,))
+    books = cursor.fetchall()
+    print(books)
+    return render_template('create_checkout.html',books=books)
+
+
+@app.route('/checkout/autocomplete/user', methods=['GET', 'POST'])
+def autocomplete_user():
+    barcode = str(request.args.get('barcode'))
+    schoolID = session['school_id']
+    query = """
+        SELECT vsu.barcode, vsu.first_name, vsu.surname, vsu.role, vsu.email, s.school_name
+        FROM view_school_users vsu
+        JOIN school s ON s.school_id = vsu.school_id
+        WHERE vsu.barcode = %s AND vsu.school_id = %s ;
+    """
+    cursor = conn.cursor()
+    cursor.execute(query, (barcode, schoolID,))
+    users = cursor.fetchall()
+    print(users)
+    return render_template('create_checkout.html', users=users)
+
 
 @app.errorhandler(401)
 def unauthorized_error(error):
