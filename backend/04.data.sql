@@ -997,3 +997,64 @@ INSERT INTO review(user_id,review_text,rating,book_id,review_status)
 VALUES(64,'very noice',5, 9780552151764,'accepted');
 INSERT INTO review(user_id,review_text,rating,book_id,review_status)
 VALUES(65,'very noice',5, 9780552151764,'accepted');
+call Add_Author2Book(9781847670946,'Katsikopoulos, Konstantinos');
+call Add_Author2Book(9780552772747, 'Rozos, Marios');
+call Add_Author2Book(9780552772747, 'Katsikopoulos, Konstantinos');
+call Add_Author2Book(9780552772747, 'Malos, Vassilis');
+call Add_Author2Book(9780007232741, 'Rozos, Marios');
+call Add_Author2Book(9780007156108, 'Malos, Vassilis');
+call Add_Author2Book(9780099450252, 'Rozos, Marios');
+call Add_Author2Book(9780099464464, 'Malos, Vassilis');
+call Add_Author2Book(9780140188592, 'Katsikopoulos, Konstantinos');
+INSERT INTO checkout (checkout_time, book_copy_id, user_id)
+VALUES
+(DATE_ADD(current_timestamp(),INTERVAL -16 DAY), 1, 23),
+(DATE_ADD(current_timestamp(),INTERVAL -16 DAY), 1, 24),
+(DATE_ADD(current_timestamp(),INTERVAL -16 DAY), 1, 25),
+(DATE_ADD(current_timestamp(),INTERVAL -16 DAY), 1, 26),
+(DATE_ADD(current_timestamp(),INTERVAL -16 DAY), 6, 6),
+(DATE_ADD(current_timestamp(),INTERVAL -16 DAY), 7, 7),
+(DATE_ADD(current_timestamp(),INTERVAL -16 DAY), 8, 8),
+(DATE_ADD(current_timestamp(),INTERVAL -16 DAY), 9, 9),
+(DATE_ADD(current_timestamp(),INTERVAL -16 DAY), 10, 10),
+(DATE_ADD(current_timestamp(),INTERVAL -2 DAY), 11, 11),
+(DATE_ADD(current_timestamp(),INTERVAL -2 DAY), 12, 12),
+(DATE_ADD(current_timestamp(),INTERVAL -2 DAY), 13, 13),
+(DATE_ADD(current_timestamp(),INTERVAL -2 DAY), 14, 14),
+(DATE_ADD(current_timestamp(),INTERVAL -2 DAY), 15, 15),
+(DATE_ADD(current_timestamp(),INTERVAL -2 DAY), 16, 16),
+(DATE_ADD(current_timestamp(),INTERVAL -2 DAY), 17, 17),
+(DATE_ADD(current_timestamp(),INTERVAL -2 DAY), 18, 18),
+(DATE_ADD(current_timestamp(),INTERVAL -2 DAY), 19, 19),
+(DATE_ADD(current_timestamp(),INTERVAL -2 DAY), 20, 20),
+(DATE_ADD(current_timestamp(),INTERVAL -1 DAY), 21, 21),
+(DATE_ADD(current_timestamp(),INTERVAL -1 DAY), 22, 22),
+(DATE_ADD(current_timestamp(),INTERVAL -1 DAY), 23, 34),
+(DATE_ADD(current_timestamp(),INTERVAL -1 DAY), 24, 35),
+(DATE_ADD(current_timestamp(),INTERVAL -1 DAY), 25, 36),
+(DATE_ADD(current_timestamp(),INTERVAL -1 DAY), 26, 37),
+(DATE_ADD(current_timestamp(),INTERVAL -1 DAY), 27, 38),
+(DATE_ADD(current_timestamp(),INTERVAL -1 DAY), 28, 28),
+(DATE_ADD(current_timestamp(),INTERVAL -1 DAY), 29, 29),
+(DATE_ADD(current_timestamp(),INTERVAL -1 DAY), 30, 30),
+(current_timestamp(), 31, 31),
+(current_timestamp(), 32, 32),
+(current_timestamp(), 33, 33),
+(current_timestamp(), 34, 34),
+(current_timestamp(), 35, 35),
+(current_timestamp(), 36, 36),
+(current_timestamp(), 37, 37),
+(current_timestamp(), 38, 38),
+(current_timestamp(), 39, 39),
+(current_timestamp(), 40, 40),
+(DATE_ADD(current_timestamp(),INTERVAL -4 DAY), 41, 41),
+(DATE_ADD(current_timestamp(),INTERVAL -4 DAY), 42, 42),
+(DATE_ADD(current_timestamp(),INTERVAL -4 DAY), 43, 43),
+(DATE_ADD(current_timestamp(),INTERVAL -4 DAY), 44, 44),
+(DATE_ADD(current_timestamp(),INTERVAL -4 DAY), 45, 27),
+(DATE_ADD(current_timestamp(),INTERVAL -4 DAY), 46, 28),
+(DATE_ADD(current_timestamp(),INTERVAL -4 DAY), 47, 29),
+(DATE_ADD(current_timestamp(),INTERVAL -4 DAY), 48, 30),
+(DATE_ADD(current_timestamp(),INTERVAL -4 DAY), 49, 31),
+(DATE_ADD(current_timestamp(),INTERVAL -4 DAY), 50, 32),
+(DATE_ADD(current_timestamp(),INTERVAL -4 DAY), 51, 33);
