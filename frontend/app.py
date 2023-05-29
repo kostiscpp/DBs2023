@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 import pymysql
+import json
 from pymysql import Error
 
 app = Flask(__name__)
@@ -629,8 +630,8 @@ def create_checkout_redirect():
 def create_checkout_operator():
     return render_template('create_checkout_operator.html')
 
-@app.route('/operator/checkout/autocomplete/book', methods=['GET','POST'])
-def autocomplete_book_operator():
+@app.route('/checkout/autocomplete/book', methods=['GET','POST'])
+def autocomplete_book():
     isbn = request.args.get('isbn')  # Retrieve the 'isbn' parameter from the query string
     schoolID = session['school_id']
     query = """
@@ -643,11 +644,13 @@ def autocomplete_book_operator():
     cursor = conn.cursor()
     cursor.execute(query, (isbn, schoolID,))
     books = cursor.fetchall()
-    print(books)
-    return render_template('create_checkout_operator.html',books=books)
+    books_json = json.dumps(books)
+
+    # Return the books data as JSON response
+    return books_json
 
 
-@app.route('/operator/checkout/autocomplete/user', methods=['GET', 'POST'])
+@app.route('/checkout/autocomplete/user', methods=['GET', 'POST'])
 def autocomplete_user():
     barcode = str(request.args.get('barcode'))
     schoolID = session['school_id']
@@ -660,8 +663,9 @@ def autocomplete_user():
     cursor = conn.cursor()
     cursor.execute(query, (barcode, schoolID,))
     users = cursor.fetchall()
-    print(users)
-    return render_template('create_checkout_operator.html', users=users)
+    users_json = json.dumps(users)
+    return users_json
+
 
 
 @app.errorhandler(401)
