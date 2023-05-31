@@ -16,7 +16,7 @@
 <body class="sb-nav-fixed">
     <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
         <!-- Navbar Brand-->
-        <a class="navbar-brand ps-2" href="/user/main">Δίκτυο Σχολικών <br> Βιβλιοθηκών</a>
+        <a class="navbar-brand ps-2" href="/admin/main">Δίκτυο Σχολικών <br> Βιβλιοθηκών</a>
         <!-- Sidebar Toggle-->
         <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle" href="#!"><i
                 class="fas fa-bars"></i></button>
@@ -36,8 +36,8 @@
                 <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown"
                     aria-expanded="false"><i class="fas fa-user fa-fw"></i></a>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                    <form action="{{ url_for('profile_user') }}" method="POST">
-                        <li><a class="dropdown-item" href="{{ url_for('profile_user') }}">Προφίλ</a></li>
+                    <form action="{{ url_for('profile_admin') }}" method="POST">
+                        <li><a class="dropdown-item" href="{{ url_for('profile_admin') }}">Προφίλ</a></li>
                     </form>
                     <li><a class="dropdown-item" href="#!">Activity Log</a></li>
                     <li>
@@ -112,7 +112,7 @@
                             </nav>
                         </div>
                         <div class="sb-sidenav-menu-heading">Addons</div>
-                        <a class="nav-link" href="/user/books">
+                        <a class="nav-link" href="/main/books">
                             <div class="sb-nav-link-icon"><i class="fas fa-chart-area"></i></div>
                             Βιβλία
                         </a>
@@ -137,40 +137,40 @@
                     </ol>
                     {% with messages = get_flashed_messages(with_categories=true) %}
                     {% if messages %}
-                        {% for category, message in messages %}                       
+                        {% for category, message in messages %}
                         <div id="flash-messages" class="mt-4">
                             <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
                                 {{ message }}
                                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                             </div>
                         </div>
-                        {% endfor %} 
+                        {% endfor %}
                     {% endif %}
                     {% endwith %}
                     <h1 class="mt-4 mb-5" id="searchText">Πληκτρολογήστε τον τίτλο του βιβλίου</h1>
-                    <form method="POST" action="/user/books">
-                    <div class="row justify-content-center">
-                        <div class="col-md-6">
-                                <div class="input-group input-group-lg mb-4" style="width: 120%;">
-                                    <input type="text" class="form-control" id="searchKey" name="searchKey" placeholder="Αναζήτηση..."
-                                        aria-label="Username" aria-describedby="basic-addon1">
-                                    <button class="btn btn-success" id="btnBookSearch" type="submit"><i
-                                            class="fas fa-search"></i></button>
-                                </div>
+                    <form method="POST" action="/admin/books">
+                        <div class="row justify-content-center">
+                            <div class="col-md-6">
+                                    <div class="input-group input-group-lg mb-4" style="width: 120%;">
+                                        <input type="text" class="form-control" id="searchKey" name="searchKey" placeholder="Αναζήτηση..."
+                                            aria-label="Username" aria-describedby="basic-addon1">
+                                        <button class="btn btn-success" id="btnBookSearch" type="submit"><i
+                                                class="fas fa-search"></i></button>
+                                    </div>
+                            </div>
                         </div>
-                    </div>
-                    <div class="row justify-content-center mb-4">
-                        <div class="col-md-5">
-                            <select class="form-select" id="searchType" name="searchType">
-                                <option value="title">Τίτλος</option>
-                                <option value="author">Συγγραφέας</option>
-                                <option value="category">Κατηγορία</option>
-                                <option value="keyword">Λέξη-κλειδί</option>
-                                <option value="ISBN">ISBN</option>
-                            </select>
+                        <div class="row justify-content-center mb-4">
+                            <div class="col-md-5">
+                                <select class="form-select" id="searchType" name="searchType">
+                                    <option value="title">Τίτλος</option>
+                                    <option value="author">Συγγραφέας</option>
+                                    <option value="category">Κατηγορία</option>
+                                    <option value="keyword">Λέξη-κλειδί</option>
+                                    <option value="ISBN">ISBN</option>
+                                </select>
+                            </div>
                         </div>
-                    </div>
-                </form>
+                    </form>
                     <div class="card mb-4">
                         <div class="card-header">
                             <i class="fas fa-table me-1"></i>
@@ -190,7 +190,7 @@
                                 <tbody>
                                     {% for book in books %}
                                     <tr>
-                                        <td><a class="text-decoration-none link-success" href="{{ url_for('book_details_user', book=book['title']) }}">{{ book.title }}</a></td>
+                                        <td><a class="text-decoration-none link-success" href="{{ url_for('book_details_admin', book=book['title']) }}">{{ book.title }}</a></td>
                                         <td>{{ book.name }}</td>
                                         <td>{{ book.available_copies_number }} / {{ book.book_copies_number }} </td>
                                         <!-- Populate other table columns with book data -->
@@ -220,8 +220,8 @@
         crossorigin="anonymous"></script>
     <script src="../static/scripts.js"></script>
     <script src="../static/search_type_script.js"></script>
-    <script src="../static/search_book_user_script.js"></script>
-    <script src="../static/searching_script.js"></script>
+    <script src="../static/search_book_admin_script.js"></script>
+    <script src="../static/searching_script_admin.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/umd/simple-datatables.min.js"
         crossorigin="anonymous"></script>

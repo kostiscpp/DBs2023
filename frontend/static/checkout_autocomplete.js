@@ -1,8 +1,6 @@
-console.log("Loaded scripts.js");
 $(document).ready(function() {
   // Book Autocomplete Button Click Event
   $('#bookAutocompleteBtn').click(function() {
-    console.log("Button comple");
     var isbn = $('#isbnInput').val();
     // Make an asynchronous request to your server to fetch book info based on the ISBN
     // Update the book info fields with the returned data

@@ -8,8 +8,8 @@
     <meta name="description" content=""/>
     <meta name="author" content=""/>
     <title>Δίκτυο Σχολικών Βιβλιοθηκών</title>
-    <link href="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/style.min.css" rel="stylesheet"/>
-    <link href="../../static/index_style.css" rel="stylesheet"/>
+    <link href="/../static/index_style.css" rel="stylesheet" type="text/css"/>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
 </head>
 
@@ -37,7 +37,7 @@
             <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown"
                aria-expanded="false"><i class="fas fa-user fa-fw"></i></a>
             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                <form action="{{ url_for('profile_admin') }}" method="POST">
+                <form action="{{ url_for('profile_user') }}" method="POST">
                     <li><a class="dropdown-item" href="{{ url_for('profile_admin') }}">Προφίλ</a></li>
                 </form>
                 <li><a class="dropdown-item" href="#!">Activity Log</a></li>
@@ -132,143 +132,116 @@
     <div id="layoutSidenav_content">
         <main>
             <div class="container-fluid px-4">
-                <h1 class="mt-4">Αιτήματα δανεισμών</h1>
+                <h1 class="mt-4">Πραγματοποίηση Δανεισμού</h1>
                 <ol class="breadcrumb mb-4">
                     <li class="breadcrumb-item active">Dashboard</li>
                 </ol>
-                <div class="row">
-                    <div class="row justify-content-center">
-                        <div class="col-md-7 mb-4">
-                            <h3 id="pageTitle">Βρες τους μαθητές με τους περισσότερους δανεισμούς<br>με ηλικία κάτω των
-                                40
-                                ετών:</h3>
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div id="flash-messages" class="mt-4">
+                                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"
+                                            aria-label="Close"></button>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+            </div>
+            <div class="row">
+                <div class="col-md-4 border-right">
+                    <div class="p-3 py-5">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h4 class="text-right">Πληροφορίες Βιβλίου</h4>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-md-12">
+                                <label class="labels" for="isbnInput">ISBN</label>
+                                <div class="input-group input-group mb-4" style="width: 100%;">
+                                    <input type="text" class="form-control" id="isbnInput"
+                                           placeholder="Εισάγετε το ISBN">
+                                    <button class="btn btn-success" id="bookAutocompleteBtn" type="button"><i
+                                            class="fas fa-search"></i></button>
+                                </div>
+                            </div>
+                            <div class="col-md-12"><label class="labels" for="bookTitle">Βιβλίο</label><input
+                                    type="text" class="form-control" placeholder="Τίτλος" id="bookTitle" readonly></div>
+                            <div class="col-md-12"><label class="labels">Συγγραφείς</label><input type="text"
+                                                                                                  class="form-control"
+                                                                                                  placeholder="Συγγραφέας"
+                                                                                                  id="bookAuthor"
+                                                                                                  readonly></div>
+                            <div class="col-md-12"><label class="labels">Αριθμός Σελίδων</label><input type="number"
+                                                                                                       class="form-control"
+                                                                                                       placeholder="Αριθμός σελίδων"
+                                                                                                       id="bookPages"
+                                                                                                       readonly></div>
+                            <div class="col-md-12"><label class="labels">Έτος έκδοσης</label><input type="text"
+                                                                                                    class="form-control"
+                                                                                                    placeholder="Έτος έκδοσης"
+                                                                                                    id="bookYear"
+                                                                                                    readonly></div>
                         </div>
                     </div>
                 </div>
-            <form action="/admin/analytics/most_checkouts" method="GET">
-                <div class="row">
-                    <div class="row justify-content-center">
-                        <div class="col-md-4 mb-4">
-                            <label for="role">Είδος χρήστη:</label>
-                            <select class="form-select" id="role" name="role"
-                                    onchange="updatePageTitle()">
-                                <option value="student">Μαθητές</option>
-                                <option value="teacher">Εκπαιδευτικοί</option>
-                                <option value="both">Μαθητές και εκπαιδευτικοί</option>
-                            </select>
-                            <label for="age">Ηλικία:</label>
-                            <input type="range" id="age" name="age" min="2" max="78" oninput="updatePageTitle()">
+                <div class="col-md-5 border-right">
+                    <div class="p-3 py-5">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h4 class="text-right">Πληροφορίες Χρήστη</h4>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-md-12">
+                                <label class="labels">Barcode</label>
+                                <div class="input-group mb-4">
+                                    <input type="text" class="form-control" id="barcodeInput"
+                                           placeholder="Εισάγετε το barcode">
+                                    <div class="input-group-append">
+                                        <button class="btn btn-success" id="userAutocompleteBtn" type="button"><i
+                                                class="fas fa-search"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-md-6">
+                                <label class="labels">Όνομα</label>
+                                <input type="text" class="form-control" id="userFirstName" placeholder="Όνομα" readonly>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="labels">Επώνυμο</label>
+                                <input type="text" class="form-control" id="userSurname" placeholder="Επώνυμο" readonly>
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-md-12">
+                                <label class="labels">Επάγγελμα</label>
+                                <input type="text" class="form-control" id="userRole" placeholder="Επάγγελμα" readonly>
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-md-12">
+                                <label class="labels">Σχολείο</label>
+                                <input type="text" class="form-control" id="userSchool" placeholder="Όνομα σχολείου"
+                                       readonly>
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-md-12">
+                                <label class="labels">Ηλεκτρονική διεύθυνση</label>
+                                <input type="text" class="form-control" id="userEmail"
+                                       placeholder="Ηλεκτρονική διεύθυνση" readonly>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="row">
-                    <div class="row justify-content-center">
-                        <div class="col-md-1 mb-3">
-                            <button class="btn btn-success" id="btnMostCheckouts" type="submit"
-                                    onclick="loadDataTable({{ users }})">Υποβολή
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </form>
-                <div class="card mb-4">
-                    <div class="card-header">
-                        <i class="fas fa-table me-1"></i>
-                        Βιβλία
-                    </div>
-                    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-                    <script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
-                    <form action="/admin/analytics/most_checkouts" method="POST">
-                        <div class="card-body">
-                            <table id="bookTableSchool" class="table table-striped">
-                                <thead>
-                                <tr>
-                                    <th>Ονοματεπώνυμο</th>
-                                    <th>Ηλικία</th>
-                                    <th>Σχολείο</th>
-                                    <th>Πόλη</th>
-                                    <th>Πλήθος δανεισμένων βιβλίων</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                {% for user in users %}
-                                    <tr>
-                                        <td>{{ user.name }}</td>
-                                        <td>{{ user.age }}</td>
-                                        <td>{{ user.school }}</td>
-                                        <td>{{ user.city }}</td>
-                                        <td>{{ user.total_checkouts }}</td>
-                                    </tr>
-                                {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    </form>
                 </div>
             </div>
-            <script>
-                function updatePageTitle() {
-                    var selectElement = document.getElementById("searchQuery313");
-                    var pageTitleElement = document.getElementById("pageTitle");
-                    var ageInput = document.getElementById("age");
-                    var selectedOption = selectElement.value;
-                    var ageValue = ageInput.value;
-
-                    switch (selectedOption) {
-                        case "student":
-                            pageTitleElement.innerHTML = "Βρες τους μαθητές με τους περισσότερους δανεισμούς με ηλικία κάτω των " + ageValue + " ετών:";
-                            break;
-                        case "teacher":
-                            pageTitleElement.innerHTML = "Βρες τους εκπαιδευτικούς με τους περισσότερους δανεισμούς με ηλικία κάτω των " + ageValue + " ετών:";
-                            break;
-                        case "both":
-                            pageTitleElement.innerHTML = "Βρες τους μαθητές και τους εκπαιδευτικούς με τους περισσότερους δανεισμούς με ηλικία κάτω των " + ageValue + " ετών:";
-                            break;
-                    }
-                }
-
-                function loadDataTable(users) {
-                    var table = document.getElementById("dataTableMoreCheckouts");
-                    var tbody = table.querySelector("tbody");
-
-                    // Clear existing table rows
-                    tbody.innerHTML = "";
-
-                    // Populate table with user data
-                    for (var i = 0; i < users.length; i++) {
-                        var user = users[i];
-
-                        // Create a new row
-                        var row = document.createElement("tr");
-
-                        // Create cells for each user property
-                        var userIdCell = document.createElement("td");
-                        userIdCell.textContent = user[0];
-                        row.appendChild(userIdCell);
-
-                        var firstNameCell = document.createElement("td");
-                        firstNameCell.textContent = user[1];
-                        row.appendChild(firstNameCell);
-
-                        var surnameCell = document.createElement("td");
-                        surnameCell.textContent = user[2];
-                        row.appendChild(surnameCell);
-
-                        var ageCell = document.createElement("td");
-                        ageCell.textContent = user[3];
-                        row.appendChild(ageCell);
-
-                        var totalCheckoutsCell = document.createElement("td");
-                        totalCheckoutsCell.textContent = user[4];
-                        row.appendChild(totalCheckoutsCell);
-
-                        // Append the row to the table body
-                        tbody.appendChild(row);
-                    }
-
-                    // Show the table
-                }
-            </script>
+            <div class="row">
+                <div class="mt-4 text-center">
+                    <button class="btn btn-success profile-button" type="button">Δανεισμός</button>
+                </div>
+            </div>
         </main>
         <footer class="py-4 bg-light mt-auto">
             <div class="container-fluid px-4">
@@ -286,23 +259,9 @@
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
         crossorigin="anonymous"></script>
-<script src="../../static/scripts.js"></script>
-<script src="../../static/search_type_script.js"></script>
-<script src="../../static/search_book_user_script.js"></script>
-<script src="../../static/searching_script.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js" crossorigin="anonymous"></script>
-<!-- <script src="assets/demo/chart-area-demo.js"></script>
-<script src="assets/demo/chart-bar-demo.js"></script> -->
-<script src="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/umd/simple-datatables.min.js"
-        crossorigin="anonymous"></script>
-<script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/umd/simple-datatables.min.js"
-        crossorigin="anonymous"></script>
-<!-- <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.js"></script>
-<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.25/js/dataTables.bootstrap5.js"></script> -->
-<!-- <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.js"></script>
- <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.25/js/dataTables.bootstrap5.js"></script>
- <script src="js/datatables-simple-demo.js"></script> -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="../static/scripts.js"></script>
+<script src="../static/checkout_autocomplete.js"></script>
 </body>
 
 </html>

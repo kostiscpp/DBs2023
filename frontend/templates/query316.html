@@ -8,8 +8,10 @@
     <meta name="description" content=""/>
     <meta name="author" content=""/>
     <title>Δίκτυο Σχολικών Βιβλιοθηκών</title>
-    <link href="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/style.min.css" rel="stylesheet"/>
-    <link href="../../static/index_style.css" rel="stylesheet"/>
+    <link href="https://cdn.datatables.net/1.11.4/css/jquery.dataTables.min.css" rel="stylesheet" />
+    <link href="../../static/index_style.css" rel="stylesheet" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.4/js/jquery.dataTables.min.js"></script>
     <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
 </head>
 
@@ -136,139 +138,42 @@
                 <ol class="breadcrumb mb-4">
                     <li class="breadcrumb-item active">Dashboard</li>
                 </ol>
-                <div class="row">
-                    <div class="row justify-content-center">
-                        <div class="col-md-7 mb-4">
-                            <h3 id="pageTitle">Βρες τους μαθητές με τους περισσότερους δανεισμούς<br>με ηλικία κάτω των
-                                40
-                                ετών:</h3>
-                        </div>
-                    </div>
-                </div>
-            <form action="/admin/analytics/most_checkouts" method="GET">
-                <div class="row">
-                    <div class="row justify-content-center">
-                        <div class="col-md-4 mb-4">
-                            <label for="role">Είδος χρήστη:</label>
-                            <select class="form-select" id="role" name="role"
-                                    onchange="updatePageTitle()">
-                                <option value="student">Μαθητές</option>
-                                <option value="teacher">Εκπαιδευτικοί</option>
-                                <option value="both">Μαθητές και εκπαιδευτικοί</option>
-                            </select>
-                            <label for="age">Ηλικία:</label>
-                            <input type="range" id="age" name="age" min="2" max="78" oninput="updatePageTitle()">
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="row justify-content-center">
-                        <div class="col-md-1 mb-3">
-                            <button class="btn btn-success" id="btnMostCheckouts" type="submit"
-                                    onclick="loadDataTable({{ users }})">Υποβολή
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </form>
+                <h3 class="mt-4 mb-4">Όχι πολύ επιτυχημένοι συγγραφείς</h3>
                 <div class="card mb-4">
                     <div class="card-header">
                         <i class="fas fa-table me-1"></i>
                         Βιβλία
                     </div>
-                    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-                    <script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
-                    <form action="/admin/analytics/most_checkouts" method="POST">
-                        <div class="card-body">
-                            <table id="bookTableSchool" class="table table-striped">
-                                <thead>
+                    <div class="card-body">
+                        <table id="schoolTable" class="table table-striped">
+                            <thead>
+                            <tr>
+                                <th class="w-30">1η κατηγορία</th>
+                                <th>2η κατηγορία</th>
+                                <th>Πλήθος συνόλου βιβλίων</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for category in categories %}
                                 <tr>
-                                    <th>Ονοματεπώνυμο</th>
-                                    <th>Ηλικία</th>
-                                    <th>Σχολείο</th>
-                                    <th>Πόλη</th>
-                                    <th>Πλήθος δανεισμένων βιβλίων</th>
+                                    <td>{{ category.category1 }} </td>
+                                    <td>{{ category.category2 }} </td>
+                                    <td>{{ category.num_books }} </td>
                                 </tr>
-                                </thead>
-                                <tbody>
-                                {% for user in users %}
-                                    <tr>
-                                        <td>{{ user.name }}</td>
-                                        <td>{{ user.age }}</td>
-                                        <td>{{ user.school }}</td>
-                                        <td>{{ user.city }}</td>
-                                        <td>{{ user.total_checkouts }}</td>
-                                    </tr>
-                                {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    </form>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
-            <script>
-                function updatePageTitle() {
-                    var selectElement = document.getElementById("searchQuery313");
-                    var pageTitleElement = document.getElementById("pageTitle");
-                    var ageInput = document.getElementById("age");
-                    var selectedOption = selectElement.value;
-                    var ageValue = ageInput.value;
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.4/js/jquery.dataTables.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#schoolTable').DataTable();
+        });
+    </script>
 
-                    switch (selectedOption) {
-                        case "student":
-                            pageTitleElement.innerHTML = "Βρες τους μαθητές με τους περισσότερους δανεισμούς με ηλικία κάτω των " + ageValue + " ετών:";
-                            break;
-                        case "teacher":
-                            pageTitleElement.innerHTML = "Βρες τους εκπαιδευτικούς με τους περισσότερους δανεισμούς με ηλικία κάτω των " + ageValue + " ετών:";
-                            break;
-                        case "both":
-                            pageTitleElement.innerHTML = "Βρες τους μαθητές και τους εκπαιδευτικούς με τους περισσότερους δανεισμούς με ηλικία κάτω των " + ageValue + " ετών:";
-                            break;
-                    }
-                }
-
-                function loadDataTable(users) {
-                    var table = document.getElementById("dataTableMoreCheckouts");
-                    var tbody = table.querySelector("tbody");
-
-                    // Clear existing table rows
-                    tbody.innerHTML = "";
-
-                    // Populate table with user data
-                    for (var i = 0; i < users.length; i++) {
-                        var user = users[i];
-
-                        // Create a new row
-                        var row = document.createElement("tr");
-
-                        // Create cells for each user property
-                        var userIdCell = document.createElement("td");
-                        userIdCell.textContent = user[0];
-                        row.appendChild(userIdCell);
-
-                        var firstNameCell = document.createElement("td");
-                        firstNameCell.textContent = user[1];
-                        row.appendChild(firstNameCell);
-
-                        var surnameCell = document.createElement("td");
-                        surnameCell.textContent = user[2];
-                        row.appendChild(surnameCell);
-
-                        var ageCell = document.createElement("td");
-                        ageCell.textContent = user[3];
-                        row.appendChild(ageCell);
-
-                        var totalCheckoutsCell = document.createElement("td");
-                        totalCheckoutsCell.textContent = user[4];
-                        row.appendChild(totalCheckoutsCell);
-
-                        // Append the row to the table body
-                        tbody.appendChild(row);
-                    }
-
-                    // Show the table
-                }
-            </script>
         </main>
         <footer class="py-4 bg-light mt-auto">
             <div class="container-fluid px-4">
@@ -287,22 +192,7 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
         crossorigin="anonymous"></script>
 <script src="../../static/scripts.js"></script>
-<script src="../../static/search_type_script.js"></script>
 <script src="../../static/search_book_user_script.js"></script>
-<script src="../../static/searching_script.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js" crossorigin="anonymous"></script>
-<!-- <script src="assets/demo/chart-area-demo.js"></script>
-<script src="assets/demo/chart-bar-demo.js"></script> -->
-<script src="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/umd/simple-datatables.min.js"
-        crossorigin="anonymous"></script>
-<script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/umd/simple-datatables.min.js"
-        crossorigin="anonymous"></script>
-<!-- <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.js"></script>
-<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.25/js/dataTables.bootstrap5.js"></script> -->
-<!-- <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.js"></script>
- <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.25/js/dataTables.bootstrap5.js"></script>
- <script src="js/datatables-simple-demo.js"></script> -->
 </body>
 
 </html>

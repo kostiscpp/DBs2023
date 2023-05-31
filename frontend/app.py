@@ -84,6 +84,30 @@ def login_user():
     # Show the login form with message (if any)
     return render_template('login.html', error_message=error_message)
 
+@app.route('/user/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST' and all(field in request.form for field in ['username', 'password', 'first_name', 'surname', 'birth_date', 'barcode', 'email', 'role', 'school_name']):
+        # Create variables for easy access
+        credentials = [request.form.get(field) for field in ['first_name', 'surname', 'username', 'password', 'birth_date', 'email', 'role','school_name']]
+        print(credentials)
+        # Check if account exists using MySQL
+        cursor = conn.cursor()
+        cursor.execute('SELECT school_id FROM school WHERE school_name = %s', (credentials[-1],))
+        result = cursor.fetchone()
+        if result:
+            school_id = result['school_id']
+            try:
+                cursor.execute('INSERT INTO user (first_name, surname, username, pwd, birth_date, email, role, school_id) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)', tuple(credentials[:-1] + [school_id]))
+                conn.commit()
+                cursor.close()
+                return redirect('/user/login')
+            except Exception as e:
+                error_message = 'An error occurred during registration. Please try again.'
+                # Log the error or handle it appropriately
+        else:
+            error_message = 'This school does not exist!'
+
+    return render_template('register.html')
 
 @app.route('/main', methods=['GET', 'POST'])
 def go_to_main():
@@ -110,6 +134,20 @@ def go_to_main_operator():
 def go_to_main_user():
     return render_template('index_user.html')
 
+@app.route('/admin/profile', methods=['GET', 'POST'])
+def profile_admin():
+    username = session['username']
+    school = session['school_id']
+    query = """
+    SELECT u.*, s.school_name
+    FROM user u 
+    JOIN school s on u.school_id = s.school_id
+    WHERE u.username = %s
+    """
+    cursor = conn.cursor()
+    cursor.execute(query, (username,))
+    user = cursor.fetchone()
+    return render_template('profile_admin.html', user=user)
 
 @app.route('/operator/profile', methods=['GET', 'POST'])
 def profile_operator():
@@ -252,7 +290,19 @@ def book_details_user(book):
     book_data = cursor.fetchone()
     return render_template('book_details_user.html', book=book_data)
 
-
+@app.route('/admin/books', methods=['GET'])
+def search_book_admin():
+    schoolID = session['school_id']
+    query = """ 
+        SELECT DISTINCT b.title, a.name, b.ISBN, b.ISBN 
+        FROM book b
+	    JOIN book_to_author b2a ON b2a.ISBN = b.ISBN
+	    JOIN author a ON a.author_id = b2a.author_id;
+        """
+    cursor = conn.cursor()
+    cursor.execute(query)
+    books = cursor.fetchall()
+    return render_template('book_search_admin.html', books=books)
 
 @app.route('/operator/books', methods=['GET'])
 def search_book_operator():
@@ -344,8 +394,8 @@ def book_details_operator(book):
     FROM view_school b
     JOIN book_to_author b2a ON b.ISBN = b2a.ISBN
     JOIN author a ON b2a.author_id = a.author_id
-    # JOIN book_to_category b2c ON b.ISBN = b2c.ISBN
-    # JOIN category c ON b2c.category_id = c.category_id
+    JOIN book_to_category b2c ON b.ISBN = b2c.ISBN
+    JOIN category c ON b2c.category_id = c.category_id
     WHERE b.title = %s AND b.school_id = {}
     """.format(schoolID)
     cursor = conn.cursor()
@@ -353,36 +403,66 @@ def book_details_operator(book):
     book_data = cursor.fetchone()
     return render_template('book_details_operator.html', book=book_data)
 
+@app.route('/admin/books/<book>', methods=['GET', 'POST'])
+def book_details_admin(book):
+    # view_name = "view_school_" + str(schoolID)
+    query = """
+    SELECT b.*, a.name
+    FROM view_school b
+    JOIN book_to_author b2a ON b.ISBN = b2a.ISBN
+    JOIN author a ON b2a.author_id = a.author_id
+    # JOIN book_to_category b2c ON b.ISBN = b2c.ISBN
+    # JOIN category c ON b2c.category_id = c.category_id
+    WHERE b.title = %s
+    """
+    cursor = conn.cursor()
+    cursor.execute(query, (book,))
+    book_data = cursor.fetchone()
+    return render_template('book_details_admin.html', book=book_data)
 
-# # Route for updating the book
-# @app.route('/admin/books/update_book', methods=['POST'])
-# def update_book():
-#     # Get the updated form data
-#     title = request.form['book_title']
-#     language = request.form['book-language']
-#     isbn = request.form['book-isbn']
-#     pages = session['book-pages']
-#     author = session['book-author']
-#     year = session['book-year']
 
-#     # Connect to the MySQL database
-#     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+@app.route('/user/books/<book>/reviews', methods=['GET', 'POST'])
+def book_reviews_user(book):
+    schoolID = session['school_id']
+    # view_name = "view_school_" + str(schoolID)
+    query = """
+    SELECT r.*, concat(u.first_name, ' ', u.surname) AS full_name
+    FROM review r
+    JOIN view_school b ON b.ISBN = r.book_id
+    JOIN view_school_users u ON r.user_id = u.user_id
+    # JOIN book_to_category b2c ON b.ISBN = b2c.ISBN
+    # JOIN category c ON b2c.category_id = c.category_id
+    WHERE b.title = %s AND b.school_id = {} AND r.review_status = 'accepted'
+    """.format(schoolID)
+    cursor = conn.cursor()
+    cursor.execute(query, (book,))
+    reviews = cursor.fetchall()
+    return render_template('book_reviews_user.html', reviews=reviews)
 
-#     # Prepare the SQL statement to update the user's birth date and school
-#     update_query = "UPDATE `book` SET `title` = %s, `language` = %s, `ISBN` = %s `pages` = %s `year` = %s WHERE `` = %s"
 
-#     # Execute the update query
-#     cursor.execute(update_query, (birth_date, email, profile, username,))
+@app.route('/user/books/<book>/add_review', methods=['GET', 'POST'])
+def book_add_review_user(book):
+    if request.method == 'POST':
+        schoolID = session['school_id']
+        userID = session['user_id']
+        rating = request.form.get('ratingInput')
+        reviewText = request.form.get('textInput')
 
-#     # Commit the changes to the databasesearch_result
-#     mysql.connection.commit()
-#     cursor.close()
+        # view_name = "view_school_" + str(schoolID)
+        if rating and reviewText:
+            cursor = conn.cursor()
+            cursor.execute("SELECT b.ISBN FROM view_school b WHERE (b.title = %s AND b.school_id  = %s);",
+                           (book, schoolID))
+            bookID = cursor.fetchone()['ISBN']
+            query = """
+            INSERT INTO review (user_id,review_text,rating,book_id) VALUES (%s,%s,%s,%s); 
+            """
+            cursor.execute(query, (userID, reviewText, rating, bookID,))
+            conn.commit()
+            cursor.close()
+            return redirect(url_for('book_reviews_user', book=book))
 
-#     flash('Οι αλλαγές αποθηκεύτηκαν', 'success')
-
-#     # Redirect back to the profile page after the update
-#     return redirect('/user/profile')
-
+    return render_template('book_add_review_user.html', book=book)
 @app.route('/user/books/checkout/<book_copy_id>', methods=['GET'])
 def user_checkout_request(book_copy_id):
     try:
@@ -500,8 +580,6 @@ def update_book_details():
     elif role == 'operator':
         return redirect('/operator/books')
 
-
-
 @app.route('/pending_holds', methods=['GET', 'POST'])
 def pending_holds_redirect():
     role = session['role']
@@ -552,6 +630,55 @@ def update_hold_status_operator():
     cursor.close()
     return redirect('/operator/pending_holds')
 
+@app.route('/register_redirect', methods=['GET','POST'])
+def register_monitoring_redirect():
+    role = session['role']
+    if role == 'operator':
+        return redirect(url_for('register_monitoring_operator'))
+    elif role == 'admin':
+        return redirect(url_for('register_monitoring_admin'))
+
+@app.route('/operator/registers/register_monitoring', methods=['GET','POST'])
+def register_monitoring_operator():
+    schoolID = session['school_id']
+    query = """
+        SELECT vsu.*
+        FROM view_school_users vsu  
+        WHERE vsu.school_id = %s AND vsu.status = 'pending';
+    """
+    cursor = conn.cursor()
+    cursor.execute(query, (schoolID,))
+    users = cursor.fetchall()
+    no_users = False
+    if len(users) == 0:
+        no_users = True
+    else:
+        cursor.execute("SELECT school_name FROM school WHERE school_id = %s", schoolID)
+        users[0]['school_id'] = cursor.fetchall()[0]['school_name']
+    return render_template('register_monitoring_operator.html', users=users, no_users=no_users)
+
+@app.route('/operator/update_register_status', methods=['GET', 'POST'])
+def update_register_status_operator():
+    action = request.form['action']
+    user_id = request.form['user_id']
+
+    if action == 'accept':
+        update_query = "UPDATE user SET status = 'active', barcode = LPAD(FLOOR(RAND() * 999999) + 1, 8, '0') WHERE user_id = %s;"
+        cursor = conn.cursor()
+        cursor.execute(update_query, (user_id,))
+    elif action == 'reject':
+        update_query = """
+            UPDATE user
+            SET status = 'rejected'
+            WHERE user_id = %s;
+            """
+        cursor = conn.cursor()
+        cursor.execute(update_query, (user_id,))
+
+    conn.commit()
+    cursor.close()
+    return redirect('/operator/registers/register_monitoring')
+
 @app.route('/checkout_redirect', methods=['GET','POST'])
 def checkout_monitoring_redirect():
     role = session['role']
@@ -579,7 +706,7 @@ def checkout_monitoring_operator():
         no_checkouts = True
     return render_template('checkout_monitoring_operator.html', checkouts=checkouts, no_checkouts=no_checkouts)
 
-@app.route('/operator/return_book', methods=['GET', 'POST'])
+@app.route('/return_book', methods=['GET', 'POST'])
 def return_book_redirect():
     role = session['role']
     if role == 'operator':
@@ -587,6 +714,28 @@ def return_book_redirect():
     elif role == 'admin':
         return redirect(url_for('return_book_admin'))
 
+
+@app.route('/admin/return_book/result', methods=['GET', 'POST'])
+def return_book_admin():
+    if 'barcode' not in request.form:
+        return "Barcode is missing in the form data"
+    barcode = request.form['barcode']
+    schoolID = session['school_id']
+    print(barcode)
+    print(schoolID)
+    query = """
+        SELECT c.checkout_time AS time, c.checkout_status AS status, vsu.user_id, 
+            CONCAT(vsu.first_name,' ', vsu.surname) AS name, vsu.barcode, vs.title, vs.copy_id
+        FROM checkout c
+        JOIN view_school_users vsu on vsu.user_id = c.user_id
+        JOIN view_school vs on vs.copy_id = c.book_copy_id
+        WHERE vsu.barcode = %s AND vsu.school_id = %s 
+        AND c.checkout_status = 'active' OR c.checkout_status = 'overdue';
+    """
+    cursor = conn.cursor()
+    cursor.execute(query, (barcode, schoolID,))
+    checkouts = cursor.fetchall()
+    return render_template('return_book_admin.html', checkouts=checkouts)
 @app.route('/operator/return_book/result', methods=['GET', 'POST'])
 def return_book_operator():
     barcode = request.form['barcode']
@@ -607,6 +756,17 @@ def return_book_operator():
     checkouts = cursor.fetchall()
     return render_template('return_book_operator.html', checkouts=checkouts)
 
+@app.route('/admin/update_return_book', methods=['GET', 'POST'])
+def update_return_book_admin():
+    user_id = request.form['user_id']
+    book_copy_id = request.form['book_copy_id']
+    update_query = "CALL ReturnBook(%s, %s);"
+    cursor = conn.cursor()
+    cursor.execute(update_query, (book_copy_id, user_id,))
+    conn.commit()
+    cursor.close()
+    return redirect('/admin/return_book')
+
 @app.route('/operator/update_return_book', methods=['GET', 'POST'])
 def update_return_book_operator():
     user_id = request.form['user_id']
@@ -626,8 +786,23 @@ def create_checkout_redirect():
     elif role == 'operator':
         return redirect(url_for('create_checkout_operator'))
 
-@app.route('/operator/create_checkout')
+@app.route('/operator/create_checkout', methods=['GET','POST'])
 def create_checkout_operator():
+    if request.method == 'POST':
+        schoolID = session['school_id']
+        isbn = request.form.get('isbn')
+        barcode = request.form.get('barcode')
+        print(isbn)
+        print(barcode)
+        if isbn and barcode:
+            cursor = conn.cursor()
+            cursor.execute('SELECT copy_id FROM view_school WHERE (school_id = %s AND ISBN = %s);', (schoolID, isbn))
+            copyID = cursor.fetchone()['copy_id']
+            cursor.execute('SELECT user_id FROM user WHERE (school_id = %s AND barcode = %s);', (schoolID,barcode,))
+            userID = cursor.fetchone()['user_id']
+            if copyID and userID:
+                cursor.execute("INSERT INTO checkout(book_copy_id, user_id) VALUES (%s,%s);", (copyID, userID))
+                conn.commit()
     return render_template('create_checkout_operator.html')
 
 @app.route('/checkout/autocomplete/book', methods=['GET','POST'])
@@ -649,7 +824,6 @@ def autocomplete_book():
     # Return the books data as JSON response
     return books_json
 
-
 @app.route('/checkout/autocomplete/user', methods=['GET', 'POST'])
 def autocomplete_user():
     barcode = str(request.args.get('barcode'))
@@ -666,7 +840,182 @@ def autocomplete_user():
     users_json = json.dumps(users)
     return users_json
 
+@app.route('/operator/pending_reviews', methods=['GET', 'POST'])
+def pending_reviews_operator():
+    schoolID = session['school_id']
+    query = """ 
+        SELECT r.book_id, r.review_id, r.user_id, vs.title AS book, CONCAT(vsu.first_name, ' ', vsu.surname) AS name, r.rating, r.review_text 
+        FROM review r
+        JOIN view_school vs ON vs.book_id = r.book_id
+        JOIN view_school_users vsu ON vsu.user_id = r.user_id
+        WHERE vs.school_id = %s AND r.review_status = 'pending';
+    """
+    cursor = conn.cursor()
+    cursor.execute(query, (schoolID,))
+    reviews = cursor.fetchall()
+    return render_template('pending_reviews_operator.html', reviews=reviews)
 
+
+@app.route('/operator/update_review_status', methods=['GET', 'POST'])
+def update_review_status_operator():
+    review_id = request.form['review_id']
+    action = request.form['action']
+
+    if action == 'accept':
+        update_query = """
+            UPDATE review
+            SET review_status = 'accepted'
+            WHERE review_id = %s;
+            """
+        cursor = conn.cursor()
+        cursor.execute(update_query, (review_id,))
+    elif action == 'reject':
+        update_query = """
+            UPDATE review
+            SET review_status = 'rejected'
+            WHERE review_id = %s;
+            """
+        cursor = conn.cursor()
+        cursor.execute(update_query, (review_id,))
+
+    conn.commit()
+    cursor.close()
+    return redirect('/operator/pending_reviews')
+
+@app.route('/admin/analytics/query313')
+def query313_redirect():
+    return render_template('query313.html')
+
+@app.route('/admin/analytics/most_checkouts', methods=['GET','POST'])
+def query313():
+    role = request.form.get('rrole')
+    age = str(request.form.get('aage'))
+    print(role)
+    if role == "student" or role == 'teacher':
+        query = """
+            SELECT u.user_id, CONCAT(u.first_name,' ', u.surname) AS name, TIMESTAMPDIFF(YEAR, u.birth_date, CURDATE()) AS age, 
+            s.school_name AS school, s.city, COUNT(ch.checkout_id) AS total_checkouts
+            FROM user u
+            LEFT JOIN checkout ch ON ch.user_id = u.user_id
+            INNER JOIN school s ON s.school_id = u.school_id
+            WHERE u.role = %s AND TIMESTAMPDIFF(YEAR, u.birth_date, CURDATE()) < %s
+            GROUP BY u.user_id
+            ORDER BY total_checkouts DESC, age DESC, u.surname ASC;
+        """
+        cursor = conn.cursor()
+        cursor.execute(query, (role, age,))
+        users = cursor.fetchall()
+    elif role == 'both':
+        query = """
+            SELECT u.user_id, CONCAT(u.first_name,' ', u.surname) AS name, TIMESTAMPDIFF(YEAR, u.birth_date, CURDATE()) AS age, 
+            s.school_name AS school, s.city, COUNT(ch.checkout_id) AS total_checkouts
+            FROM user u
+            LEFT JOIN checkout ch ON ch.user_id = u.user_id
+            INNER JOIN school s ON s.school_id = u.school_id
+            WHERE (u.role = 'teacher' OR u.role = 'student') AND TIMESTAMPDIFF(YEAR, u.birth_date, CURDATE()) < %s
+            GROUP BY u.user_id
+            ORDER BY total_checkouts DESC, age DESC, u.surname ASC;
+        """
+        cursor = conn.cursor()
+        cursor.execute(query, (age,))
+        users = cursor.fetchall()
+    print(users)
+    return render_template('query313.html', users = users)
+
+@app.route('/admin/analytics/query314')
+def query314_redirect():
+    return redirect(url_for('query314'))
+
+@app.route('/admin/analytics/lonely_authors', methods=['GET','POST'])
+def query314():
+    query = """
+        SELECT a.name,
+        (SELECT COUNT(*) FROM book_to_author ba WHERE ba.author_id = a.author_id) AS total_books,
+        (SELECT SUM(bc.book_copies_number) FROM book_to_author ba
+         JOIN book b ON ba.ISBN = b.ISBN
+         JOIN book_copy bc ON b.ISBN = bc.book_id
+         WHERE ba.author_id = a.author_id) AS total_copies
+        FROM author a
+        WHERE NOT EXISTS (
+            SELECT 1
+            FROM book b
+            JOIN book_to_author ba ON b.ISBN = ba.ISBN
+            JOIN book_copy bc ON b.ISBN = bc.book_id
+            JOIN checkout co ON bc.copy_id = co.book_copy_id
+            WHERE ba.author_id = a.author_id
+    );
+    """
+    cursor = conn.cursor()
+    cursor.execute(query)
+    authors = cursor.fetchall()
+    return render_template('query314.html', authors = authors)
+
+@app.route('/admin/analytics/query315')
+def query315_redirect():
+    return redirect(url_for('query315'))
+
+@app.route('/admin/analytics/successful_operators', methods=['GET','POST'])
+def query315():
+    query = """
+        SELECT s.school_name, s.operator_name, s.city, COUNT(*) AS book_count
+        FROM checkout c
+        JOIN user u ON c.user_id = u.user_id
+        JOIN school s ON u.school_id = s.school_id
+        WHERE c.checkout_time BETWEEN DATE_SUB(CURDATE(), INTERVAL 1 YEAR) AND CURDATE()
+        GROUP BY s.school_name
+        HAVING COUNT(*) > 20;
+    """
+    cursor = conn.cursor()
+    cursor.execute(query)
+    schools = cursor.fetchall()
+    return render_template('query315.html', schools = schools)
+
+@app.route('/admin/analytics/query316')
+def query316_redirect():
+    return redirect(url_for('query316'))
+
+@app.route('/admin/analytics/top3-categories', methods=['GET','POST'])
+def query316():
+    query = """
+        SELECT c1.name AS category1, c2.name AS category2, COUNT(*) AS num_books
+        FROM book b
+        JOIN book_to_category bc1 ON b.ISBN = bc1.ISBN
+        JOIN category c1 ON bc1.category_id = c1.category_id
+        JOIN book_to_category bc2 ON b.ISBN = bc2.ISBN
+        JOIN category c2 ON bc2.category_id = c2.category_id
+        JOIN book_copy bc ON b.ISBN = bc.book_id
+        JOIN checkout co ON bc.copy_id = co.book_copy_id
+        GROUP BY c1.name, c2.name
+        HAVING category1 < category2
+        ORDER BY num_books DESC
+        LIMIT 3;
+    """
+    cursor = conn.cursor()
+    cursor.execute(query)
+    categories = cursor.fetchall()
+    return render_template('query316.html', categories = categories)
+@app.route('/admin/analytics/query317')
+def query317_redirect():
+    return redirect(url_for('query317'))
+
+@app.route('/admin/analytics/unsuccessful_authors', methods=['GET','POST'])
+def query317():
+    query = """
+        SELECT a.author_id, a.name, COUNT(*) AS book_count, SUM(vs.book_copies_number) AS total_copies
+        FROM book_to_author bta
+        JOIN author a ON bta.author_id = a.author_id
+        JOIN view_school vs ON bta.isbn = vs.isbn
+        GROUP BY a.author_id, a.name
+        HAVING COUNT(*) <= (SELECT MAX(book_count) - 5
+                FROM (SELECT COUNT(*) AS book_count
+                      FROM book_to_author
+                      GROUP BY author_id) AS counts)
+        ORDER BY book_count DESC, name ASC;
+    """
+    cursor = conn.cursor()
+    cursor.execute(query)
+    authors = cursor.fetchall()
+    return render_template('query317.html', authors = authors)
 
 @app.errorhandler(401)
 def unauthorized_error(error):
