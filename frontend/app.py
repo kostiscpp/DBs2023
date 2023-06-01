@@ -907,6 +907,7 @@ def query313():
             INNER JOIN school s ON s.school_id = u.school_id
             WHERE u.role = %s AND TIMESTAMPDIFF(YEAR, u.birth_date, CURDATE()) < %s
             GROUP BY u.user_id
+	    HAVING total_checkouts > 0
             ORDER BY total_checkouts DESC, age DESC, u.surname ASC;
         """
         cursor = conn.cursor()
@@ -921,6 +922,7 @@ def query313():
             INNER JOIN school s ON s.school_id = u.school_id
             WHERE (u.role = 'teacher' OR u.role = 'student') AND TIMESTAMPDIFF(YEAR, u.birth_date, CURDATE()) < %s
             GROUP BY u.user_id
+	    HAVING total_checkouts > 0
             ORDER BY total_checkouts DESC, age DESC, u.surname ASC;
         """
         cursor = conn.cursor()
