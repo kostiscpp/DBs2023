@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Review Page</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/starability-basic@1.2.2/dist/css/starability-all.min.css">
+    <style>
+        /* Review box styles */
+        .review-box {
+            margin-top: 20px;
+        }
+
+        .review-box textarea {
+            width: 100%;
+            height: 150px;
+            resize: vertical;
+        }
+
+        .review-box button {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Write a Review</h1>
+
+    <div class="review-box">
+        <div class="starability-basic">
+            <input type="radio" id="rate5" name="rating" value="5" />
+            <label for="rate5" title="5 stars"></label>
+
+            <input type="radio" id="rate4" name="rating" value="4" />
+            <label for="rate4" title="4 stars"></label>
+
+            <input type="radio" id="rate3" name="rating" value="3" />
+            <label for="rate3" title="3 stars"></label>
+
+            <input type="radio" id="rate2" name="rating" value="2" />
+            <label for="rate2" title="2 stars"></label>
+
+            <input type="radio" id="rate1" name="rating" value="1" />
+            <label for="rate1" title="1 star"></label>
+        </div>
+
+        <div class="form-group">
+            <label for="review">Review:</label>
+            <textarea class="form-control" id="review" placeholder="Write your review"></textarea>
+        </div>
+        <button type="button" class="btn btn-primary" onclick="submitReview()">Submit</button>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script>
+        function submitReview() {
+            // Get the selected rating
+            var ratingInput = document.querySelector('input[name="rating"]:checked');
+            var selectedRating = ratingInput ? ratingInput.value : null;
+            console.log('Selected rating:', selectedRating);
+
+            // Get the review text
+            var reviewText = document.getElementById('review').value;
+            console.log('Review:', reviewText);
+
+            // Perform further actions, such as sending the rating and review to the server
+            // using AJAX or submitting a form
+
+            // Redirect to a different page after submitting the review
+            window.location.href = '/thank-you'; // Replace with your desired URL
+        }
+    </script>
+</body>
+</html>
