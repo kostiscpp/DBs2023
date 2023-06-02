@@ -97,7 +97,7 @@ BEGIN
     select count(*) INTO V_COUNT from book where ISBN=book_ISBN;
     -- If book exists
     IF(V_COUNT = 1) THEN
-            select count(*)  INTO V_COUNT from author where  name=author_id;
+            select count(*)  INTO V_COUNT from author where  name=author_name;
 	    IF (V_COUNT=0) THEN
 			INSERT  INTO author (name) VALUES (author_name);
 			SET A_ID=LAST_INSERT_ID();
@@ -323,7 +323,7 @@ CREATE TABLE `book_copy` (
 CREATE TABLE `book_to_author` (
   `author_id` int(11) NOT NULL,
   `ISBN` varchar(20) NOT NULL,
-  PRIMARY KEY (`author_id`,`ISBN`),
+  PRIMARY KEY(`author_id`,`ISBN`),
   CONSTRAINT `FK_AUTHOR_ID` FOREIGN KEY (author_id) REFERENCES `author` (author_id) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `FK_AUTH_ISBN` FOREIGN KEY (ISBN) REFERENCES `book` (ISBN) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -338,7 +338,7 @@ CREATE TABLE `book_to_author` (
 CREATE TABLE `book_to_category` (
   `category_id` int(11) NOT NULL,
   `ISBN` varchar(20) NOT NULL,
-  PRIMARY KEY (`category_id`,`ISBN`),
+  PRIMARY KEY(`category_id`,`ISBN`),
   CONSTRAINT `FK_CATEGORY_ID` FOREIGN KEY (`category_id`) REFERENCES `category` (`category_id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `FK_CAT_ISBN` FOREIGN KEY (ISBN) REFERENCES `book` (ISBN) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -357,7 +357,7 @@ CREATE TABLE `user` (
   `username` varchar(50) NOT NULL UNIQUE,
   `pwd` varchar(50) NOT NULL,
   `birth_date` date NOT NULL,
-  `email` varchar(255) NOT NULL,
+  `email` varchar(255) NOT NULL UNIQUE,
   `school_id` int(11) NOT NULL,
   `status` enum('active','inactive','deleted', 'pending', 'rejected') NOT NULL DEFAULT 'pending',
   `role` enum('admin','operator','teacher','student') NOT NULL,
@@ -534,9 +534,12 @@ END //
  AFTER INSERT ON checkout
  FOR EACH ROW
  BEGIN
+    IF NEW.checkout_status = 'active' OR NEW.checkout_status = 'overdue' 
+    THEN
      UPDATE book_copy
      SET available_copies_number = available_copies_number - 1
      WHERE copy_id = NEW.book_copy_id;
+    END IF;
  END //
  
 CREATE TRIGGER tr_incr_availability_ch
@@ -595,13 +598,25 @@ BEGIN
 
 END //
 
+CREATE TRIGGER review_on_same_book
+BEFORE INSERT ON review
+FOR EACH ROW
+BEGIN
+  IF (SELECT count(*) FROM review r 
+        WHERE r.user_id = NEW.user_id 
+        AND r.book_id = NEW.book_id
+      ) > 0 THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cannot review a book two times.';
+    END IF;
+END//
+
 CREATE TRIGGER update_average_rating_insert
 AFTER INSERT ON review
 FOR EACH ROW
 BEGIN
     UPDATE book b
-    SET average_rating = (
-        SELECT AVG(rating)
+    SET b.average_rating = (
+        SELECT COALESCE(AVG(rating), 0)
         FROM review
         WHERE book_id = NEW.book_id AND review_status = 'accepted'
     )
@@ -614,12 +629,14 @@ FOR EACH ROW
 BEGIN
     UPDATE book b
     SET average_rating = (
-        SELECT AVG(rating)
+        SELECT COALESCE(AVG(rating), 0)
         FROM review
         WHERE book_id = NEW.book_id AND review_status = 'accepted'
     )
     WHERE b.ISBN = NEW.book_id;
 END //
+
+
 -- CREATE TRIGGER tr_lock_availability_for_pending
 -- BEFORE UPDATE ON hold
 -- FOR EACH ROW
