@@ -1,4 +1,4 @@
-INSERT INTO school (school_name, address, city, phone_number, email, principal_name, operator_name)
+INSERT INTO school (school_name, address, city, phone_number, email, principal_name, operator_name, special_key)
 VALUES
 ('27ο Δημοτικό Σχολείο Ιωαννίνων','Ισαάκ Τάσσου 22','Ιωάννινα',2651068679, '27dimioa@sch.gr','Ζώνιος Σπύρος','Ρόζος Μάριος', 'UMiqA!KQf@uLBWMw'),
 ('ΠΡΟΤΥΠΟ ΛΥΚΕΙΟ ΖΩΣΙΜΑΙΑΣ ΣΧΟΛΗΣ ΙΩΑΝΝΙΝΩΝ','Πλατεία Αρχιεπισκόπου Σπυρίδωνος','Ιωάννινα',2651025013, 'mail@lyk-zosim.ioa.sch.gr','Αντωνίου Κωνσταντίνος','Κατσικόπουλος Κωστής', 'YnFh0A@@oE1y^O5B'),
@@ -6,7 +6,7 @@ VALUES
 ('Πρότυπο Λύκειο Αναβρύτων','Λεωφόρος Κηφισίας 184','Αμαρούσιον Αττικής',2106233215, 'mail@lyk-peir-anavr.att.sch.gr','Οτζάκογλου Θεόδωρος','Σωτηρόπουλος Νικόλαος','Xw!vWUYaAW@RU6xL'),
 ('Πρότυπο ΕΠΑΛ Ηγουμενίτσας','Οδος αληθειαc 13','Ηγουμενίτσα',2665023521,'1epal-igoum.thesp.sch.gr','Τζάνης Νικόλαος','Οπερέιτορας 1','yZhBmVvEFd57vyTQ'),
 ('2ο Γενικό Λύκειο Ηγουμενίτσας','Οδος αληθειαc 666','Ηγουμενίτσα',2665025644,'mail@2lyk-igoum.thesp.sch.gr','Νάκος Καλαμάρης','Οπερέιτορας 2', 'cY$!OcQ4!aU5vO0y');
-INSERT INTO school (school_id,school_name, address, city, phone_number, email, principal_name, operator_name)
+INSERT INTO school (school_id,school_name, address, city, phone_number, email, principal_name, operator_name, special_key)
 VALUES
 (0,'Δίκτυο Σχολικών Βιβλιοθηκών','Λεωφόρος Αλεξάνδρας 42','Αθήνα',26510682323, 'genlib@sch.gr','Στέφανος Καραναστάσης','Αδμίνος Α.','fPeIu@07aR7TmBLi');
 
