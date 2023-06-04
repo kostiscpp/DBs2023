@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
+    <meta name="description" content=""/>
+    <meta name="author" content=""/>
+    <title>Registration</title>
+    <link href="../static/index_style.css" rel="stylesheet"/>
+    <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
+</head>
+<body>
+<main>
+    <div class="container-fluid px-4">
+        <div class="row mt-2 mb-2 justify-content-center">
+            <div class="col-md-6">
+                <h1 class="mt-4">Εγγραφή Σχολείου</h1>
+                <h5 class="mt-4">Συμπληρώστε τα στοιχεία του σχολείου που θέλετε να προσθέσετε.</h5>
+                <form action="/admin/register_school" method="POST">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="p-3 py-5">
+                                <div class="form-group row">
+                                    <label for="first_name" class="col-md-4 mb-1 col-form-label">Όνομα Σχολείου</label>
+                                    <div class="col-md-8">
+                                        <input type="text" class="form-control" id="school_name"
+                                               placeholder="Eισάγετε το όνομά του Σχολείου" name="school_name" required>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="address" class="col-md-4 mb-1 col-form-label">Διεύθυνση Σχολείου</label>
+                                    <div class="col-md-8">
+                                        <input type="text" class="form-control" id="address"
+                                               placeholder="Eισάγετε την Διεύθυνση του Σχολείου" name="address" required>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="city" class="col-md-4 mb-1 col-form-label">Πόλη</label>
+                                    <div class="col-md-8">
+                                        <input type="text" class="form-control" id="city"
+                                               placeholder="Eισάγετε την πόλη" name="city" required>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="city" class="col-md-4 mb-1 col-form-label">Τηλέφωνο Σχολείου</label>
+                                    <div class="col-md-8">
+                                        <input type="text" class="form-control" id="phone"
+                                               placeholder="Eισάγετε τo τηλέφωνο του Σχολείου" name="phone" required>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="email" class="col-md-4 mb-1 col-form-label">email</label>
+                                    <div class="col-md-8">
+                                        <div class="col-md-8">
+                                            <input type="text" class="form-control" id="email"
+                                                   placeholder="Εισάγετε το email του Σχολείου" name="email" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="principal_name" class="col-md-4 mb-1 col-form-label">Ονοματεπώνυμο Διευθυντή</label>
+                                    <div class="col-md-8">
+                                        <input type="text" class="form-control" id="principal_name"
+                                               placeholder="Εισάγετε το Ονοματεπώνυμο του Διευθυντή" name="principal_name" required>
+                                    </div>
+                                </div>
+
+                                <div class="mt-5 text-center mb-4">
+                                    <div class="form-group">
+                                        <input class="btn btn-success" type="submit" value="Εγγραφή Σχολείου">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+<footer class="py-4 bg-light mt-auto">
+    <div class="container-fluid px-4">
+        <div class="d-flex align-items-center justify-content-between small">
+            <div class="text-muted">© Your Website 2023</div>
+            <div>
+                <a href="#">Privacy Policy</a>
+                &middot;
+                <a href="#">Terms &amp; Conditions</a>
+            </div>
+        </div>
+    </div>
+</footer>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
+        crossorigin="anonymous"></script>
+<script src="../static/scripts.js"></script>
+</body>
+</html>

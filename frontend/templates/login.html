@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>Greek School Libraries</title>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS v5.2.1 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="../static/style.css">
+</head>
+
+<body>
+<header>
+    <!-- place navbar here -->
+    <nav class="navbar navbar-dark bg-dark">
+        <!-- Navbar content -->
+    </nav>
+</header>
+<main>
+    <div class="mt-4 col-md-12">
+    </div>
+    <div class="text-center">
+        <h1 style=font-size:75px>Δίκτυο Σχολικών Βιβλιοθηκών</h1>
+    </div>
+    <div class="container login-container">
+        <div class="row">
+            <div class="col-md-6 login-form-2">
+                <h3>Σύνδεση για διαχειριστές</h3>
+                <form action="{{ url_for('login_admin') }}" method="POST">
+                    <div class="form-group">
+                        <input type="text" name="username" class="form-control" placeholder="Όνομα Χρήστη *"
+                               id="username" required>
+                    </div>
+                    <div class="mt-1 col-md-12">
+                    </div>
+                    <div class="form-group">
+                        <input type="password" name="password" class="form-control" placeholder="Κωδικός *"
+                               id="password" required>
+                    </div>
+                    <div class="form-group">
+                        <div class="text-center">
+                            <input type="submit" class="btn btn-primary-1" value="Σύνδεση">
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <div class="form-group">
+                            <a href="login.html" class="ForgetPwd">Ξέχασες τον κωδικό σου;</a>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="text-center">
+                            <!-- <div class="msg">{{ error_message }}</div> -->
+                            <input type="button" class="btn btn-primary-2" value="Κάνε εγγραφή" onclick="window.location.href = '/operator_register';">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="col-md-6 login-form-1">
+                <h3>Σύνδεση για χρήστες</h3>
+                <form action="{{ url_for('login_user') }}" method="POST">
+                    <div class="form-group">
+                        <input type="text" name="username" class="form-control" placeholder="Όνομα Χρήστη *"
+                               id="username" required>
+                    </div>
+                    <div class="mt-1 col-md-12">
+                    </div>
+                    <div class="form-group">
+                        <input type="password" name="password" class="form-control" placeholder="Κωδικός *"
+                               id="password" required>
+                    </div>
+                    <div class="form-group">
+                        <div class="text-center">
+                            <!-- <div class="msg">{{ error_message }}</div> -->
+                            <input type="submit" class="btn btn-primary-2" value="Σύνδεση">
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <div class="form-group">
+                            <a href="/templates/login.html" class="ForgetPwd">Ξέχασες τον κωδικό σου;</a>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="text-center">
+                            <!-- <div class="msg">{{ error_message }}</div> -->
+                            <input type="button" class="btn btn-primary-1" value="Κάνε εγγραφή"
+                                   onclick="window.location.href = '/user/register';">
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+<footer class="py-4 bg-light mt-auto">
+    <div class="container-fluid px-4">
+        <div class="d-flex align-items-center justify-content-between small">
+            <div class="text-muted">Copyright &copy; Δίκτυο Σχολικών Βιβλιοθηκών</div>
+            <div>
+                <a href="#">Privacy Policy</a>
+                &middot;
+                <a href="#">Terms &amp; Conditions</a>
+            </div>
+        </div>
+    </div>
+</footer>
+<!-- Bootstrap JavaScript Libraries -->
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"
+        integrity="sha384-oBqDVmMz9ATKxIep9tiCxS/Z9fNfEXiDAYTujMAeBAsjFuCZSmKbSSUnQlmh/jp3" crossorigin="anonymous">
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.min.js"
+        integrity="sha384-7VPbUDkoPSGFnVtYi0QogXtr74QeVeeIs99Qfg5YCF+TidwNdjvaKZX19NZ/e6oz" crossorigin="anonymous">
+</script>
+</body>
+
+</html>
