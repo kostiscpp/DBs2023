@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <title>Δίκτυο Σχολικών Βιβλιοθηκών</title><link rel="icon" href="../static/book.png" type="image/x-icon">
+    <link href="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/style.min.css" rel="stylesheet" />
+    <link href="../../static/index_style.css" rel="stylesheet" />
+    <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
+</head>
+
+<body class="sb-nav-fixed">
+    <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
+        <!-- Navbar Brand-->
+        <a class="navbar-brand ps-2" href="/admin/main">Δίκτυο Σχολικών <br> Βιβλιοθηκών</a>
+        <!-- Sidebar Toggle-->
+        <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle" href="#!"><i
+                class="fas fa-bars"></i></button>
+        <!-- Navbar Search-->
+        <form class="d-none d-md-inline-block form-inline ms-auto me-0 me-md-3 my-2 my-md-0">
+            <!-- <div class="input-group"> -->
+            <!-- <input class="form-control" type="text" placeholder="Search for..." aria-label="Search for..." aria-describedby="btnNavbarSearch" /> -->
+            <button class="btn btn-success" id="btnNavbarSearch" type="button" onclick="window.location.href='{{ url_for('search_users_redirect') }}';">
+                <span class="search-text">Αναζήτηση Βιβλίων</span>
+                <i class="fas fa-search"></i>
+            </button>
+            <!-- </div> -->
+        </form>
+        <!-- Navbar-->
+        <ul class="navbar-nav ms-auto ms-md-0 me-3 me-lg-4">
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown"
+                    aria-expanded="false"><i class="fas fa-user fa-fw"></i></a>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                    <li><a class="dropdown-item" href="#!">Settings</a></li>
+                    <li><a class="dropdown-item" href="#!">Activity Log</a></li>
+                    <li>
+                        <hr class="dropdown-divider" />
+                    </li>
+                    <li><a class="dropdown-item" href="{{ url_for('logout') }}">Logout</a></li>
+                </ul>
+            </li>
+        </ul>
+    </nav>
+    <div id="layoutSidenav">
+    <div id="layoutSidenav_nav">
+        <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
+            <div class="sb-sidenav-menu">
+                <div class="nav">
+                    <div class="sb-sidenav-menu-heading">Core</div>
+                    <a class="nav-link" href="/admin/main">
+                        <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
+                        Αρχική
+                    </a>
+                    <div class="sb-sidenav-menu-heading">Interface</div>
+                    <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseLayouts"
+                       aria-expanded="false" aria-controls="collapseLayouts">
+                        <div class="sb-nav-link-icon"><i class="fas fa-columns"></i></div>
+                        Αναζήτηση
+                        <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                    </a>
+                    <div class="collapse" id="collapseLayouts" aria-labelledby="headingOne"
+                         data-bs-parent="#sidenavAccordion">
+                        <nav class="sb-sidenav-menu-nested nav">
+                            <a class="nav-link" href="{{ url_for('search_book_redirect') }}">Αναζήτηση Βιβλίων</a>
+                            <a class="nav-link" href="{{ url_for('search_users_redirect') }}">Αναζήτηση Χρηστών</a>
+                        </nav>
+                    </div>
+                    <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapsePages"
+                       aria-expanded="false" aria-controls="collapsePages">
+                        <div class="sb-nav-link-icon"><i class="fas fa-book-open"></i></div>
+                        Εγγραφές
+                        <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                    </a>
+                    <div class="collapse" id="collapsePages" aria-labelledby="headingTwo"
+                         data-bs-parent="#sidenavAccordion">
+                        <nav class="sb-sidenav-menu-nested nav accordion" id="sidenavAccordionPages">
+                            <a class="nav-link"
+                               onclick="window.location.href='{{ url_for('register_op_redirect') }}';"
+                               data-bs-toggle="collapse" data-bs-target="#pagesCollapseAuth" aria-expanded="false"
+                               aria-controls="pagesCollapseAuth">
+                                Παρακολούθηση αιτήσεων χειριστών
+                            </a>
+                            <a class="nav-link"
+                               onclick="window.location.href='{{ url_for('school_list_redirect') }}';"
+                               data-bs-toggle="collapse" data-bs-target="#pagesCollapseAuth" aria-expanded="false"
+                               aria-controls="pagesCollapseAuth">
+                                Παρακολούθηση Σχολείων
+                            </a>
+                        </nav>
+                    </div>
+                    <div class="sb-sidenav-menu-heading">Πρόσθετα</div>
+                    <a class="nav-link collapsed" href="#" data-bs-toggle="collapse"
+                       data-bs-target="#collapseStatistics" aria-expanded="false" aria-controls="collapsePages">
+                        <div class="sb-nav-link-icon"><i class="fas fa-chart-area"></i></div>
+                        Στατιστικά δεδομένα
+                        <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                    </a>
+                    <div class="collapse" id="collapseStatistics" aria-labelledby="headingThree"
+                         data-bs-parent="#sidenavAccordionPages">
+                        <nav class="sb-sidenav-menu-nested nav">
+                            <a class="nav-link" href="{{ url_for('query311_redirect') }}">Query 3.1.1</a>
+                            <a class="nav-link" href="{{ url_for('query312_redirect') }}">Query 3.1.2</a>
+                            <a class="nav-link" href="{{ url_for('query313_redirect') }}">Query 3.1.3</a>
+                            <a class="nav-link" href="{{ url_for('query314_redirect') }}">Query 3.1.4</a>
+                            <a class="nav-link" href="{{ url_for('query315_redirect') }}">Query 3.1.5</a>
+                            <a class="nav-link" href="{{ url_for('query316_redirect') }}">Query 3.1.6</a>
+                            <a class="nav-link" href="{{ url_for('query317_redirect') }}">Query 3.1.7</a>
+                        </nav>
+                    </div>
+                    <a class="nav-link collapsed" href="#" data-bs-toggle="collapse"
+                       data-bs-target="#collapseBackupRestore" aria-expanded="false" aria-controls="collapsePages">
+                        <div class="sb-nav-link-icon"><i class="fas fa-table"></i></div>
+                        Διαχείριση Βάσεων δεδομένων
+                        <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                    </a>
+                    <div class="collapse" id="collapseBackupRestore" aria-labelledby="headingThree"
+                         data-bs-parent="#sidenavAccordionPages">
+                        <nav class="sb-sidenav-menu-nested nav">
+                            <a class="nav-link" href="dbutils/begin_backupDB">Backup ενεργής βάσης δεδομένων</a>
+                            <a class="nav-link" href="dbutils/begin_restoreDB">Restore εφεδρικής βάσης δεδομένων</a>
+                            <a class="nav-link" href="dbutils/swoverinfo">Οδηγίες για switchover βάσεων & εφαρμογών. </a>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+            <div class="sb-sidenav-footer">
+                <div class="small"> Είστε συνδεδεμένος/-η ως:</div>
+                {{ session.username }}
+            </div>
+        </nav>
+    </div>
+
+    <div id="layoutSidenav_content">
+      <main>
+          <div class="container-fluid px-4">
+              <h1 class="mt-4">Οδηγίες για SwitchOver βάσεων δεδομένων και εφαρμογών</h1>
+              <ol class="breadcrumb mb-4">
+                  <li class="breadcrumb-item active">Οδηγίες για SwitchOver βάσεων δεδομένων και εφαρμογών</li>
+              </ol>
+
+              <h5>
+              <p>Step 1: Backup ενεργής (active_db) βάσης δεδομένων</p>
+              <p>Step 2: Restore εφεδρικής (standby_db) βάσης δεδομένων</p>
+              <p>Step 3: Stop όλες τις εφαρμογές που χρησιμοποιούν την ενεργή (active_db) βάση δεδομένων</p>
+              <p>Step 4: Αλλαγή στο dbenv.cfg των παραμέτρων active_db και standby_db (switchover).</p>
+              <p>Step 5: Start όλες τις εφαρμογές που χρησιμοποιούν την Νέα ενεργή (active_db) βάση δεδομένων</p>
+              <p>Step 6: Βασικός έλεγχος των εφαρμογών:</p></h5>
+              <h5>Στην περίπτωση που υπάρξει κάποιο  πρόβλημα θα πρέπει να γίνει switchback στην
+                παλιά ενεργή βάση δεδομένων αφού πρώτα γίνουν οι απαραίτητες αλλαγές στο
+                dbenv.cfg και επανεκίνηση των εφαρμογών. </h5>
+
+                <h5>Εαν οι έλεγχοι είναι επιτυχείς τότε θεωρούμε ότι ολοκληρώθηκε το
+                switchover και οι εφαρμογές μπορούν να είναι και  πάλι διαθέσιμες στους χρήστες
+                του συστήματος.Στην συνέχεια ο διαχειριστής θα πρέπει να προχωρήσει σε Backup
+                της Νέας ενεργής (active_db) βάσης δεδομένων και Restore της Νέας εφεδρικής
+                (standby_db) βάσης δεδομένων με ταυτόχρονη διαγραφή των παλαιών Backups. </h5>
+              </div>
+      </main>
+      <footer class="py-4 bg-light mt-auto">
+          <div class="container-fluid px-4">
+              <div class="d-flex align-items-center justify-content-between small">
+                  <div class="text-muted">Copyright &copy; Team Project 42 </div>
+                  <div>
+                      <a href="#">Privacy Policy</a>
+                      &middot;
+                      <a href="#">Terms &amp; Conditions</a>
+                  </div>
+              </div>
+          </div>
+      </footer>
+  </div>
+</div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
+    crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js" crossorigin="anonymous"></script>
+<!-- <script src="assets/demo/chart-area-demo.js"></script>
+<script src="assets/demo/chart-bar-demo.js"></script> -->
+<script src="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/umd/simple-datatables.min.js"
+    crossorigin="anonymous"></script>
+<!-- <script src="js/datatables-simple-demo.js"></script> -->
+<script src="../../static/scripts.js"></script>
+</body>
+</html>
