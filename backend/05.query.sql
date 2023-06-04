@@ -51,7 +51,6 @@ WHERE NOT EXISTS (
     WHERE ba.author_id = a.author_id
 )
 
---3.1.5 koniarh gamw ton xristo sou
 
 --3.1.6
 SELECT c1.name AS category1, c2.name AS category2, COUNT(*) AS total_borrowings
