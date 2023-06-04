@@ -65,11 +65,11 @@ School Library Database (Databases Project - 6th Semester ECE 2023)
 
 **3. Πρόσβαση στο Git repository**
 
-	Για την δημιουργία της βάσης δεδομένων και την εγκατάσταση της εφαρμογής πρέπει πρώτα να   
-	γίνει clone τοπικά το git repo της εφαρμογής απο το 
-	[gitfront](https://gitfront.io/r/user-2518255/u2GWTJ4ezH5x/DBs2023/) 
-	ή από το
-	[github](https://github.com/kostiscpp/DBs2023/)
+Για την δημιουργία της βάσης δεδομένων και την εγκατάσταση της εφαρμογής πρέπει πρώτα να   
+γίνει clone τοπικά το git repo της εφαρμογής απο το 
+[gitfront](https://gitfront.io/r/user-2518255/u2GWTJ4ezH5x/DBs2023/) 
+ή από το
+[github](https://github.com/kostiscpp/DBs2023/)
 
 	Project Structure
 	DBs2023
