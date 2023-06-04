@@ -1,71 +1,66 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Review Page</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/starability-basic@1.2.2/dist/css/starability-all.min.css">
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
+    <meta name="description" content=""/>
+    <meta name="author" content=""/>
+    <title>Δίκτυο Σχολικών Βιβλιοθηκών</title>
+    <link rel="icon" href="../static/book.png" type="image/x-icon">
+    <link href="../static/index_style.css" rel="stylesheet"/>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.0/dist/jsbarcode.min.js"></script>
+    <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
     <style>
-        /* Review box styles */
-        .review-box {
-            margin-top: 20px;
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
         }
 
-        .review-box textarea {
+        .card {
+            width: 500px; /* Set the desired width */
+            height: 310px; /* Set the desired height */
+        }
+
+        #barcodeCanvas {
             width: 100%;
-            height: 150px;
-            resize: vertical;
-        }
-
-        .review-box button {
-            margin-top: 10px;
+            height: 100%;
         }
     </style>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var barcodeValue = "{{ user.barcode }}"; // Replace with the actual 8-digit barcode value
+
+            // Generate the barcode using JsBarcode library with CODE39 format
+            JsBarcode("#barcodeCanvas", barcodeValue, {
+                format: "CODE39",
+                displayValue: true,
+                fontSize: 16,
+                lineColor: "white",
+                background: "transparent"
+            });
+        });
+    </script>
 </head>
 <body>
-    <h1>Write a Review</h1>
-
-    <div class="review-box">
-        <div class="starability-basic">
-            <input type="radio" id="rate5" name="rating" value="5" />
-            <label for="rate5" title="5 stars"></label>
-
-            <input type="radio" id="rate4" name="rating" value="4" />
-            <label for="rate4" title="4 stars"></label>
-
-            <input type="radio" id="rate3" name="rating" value="3" />
-            <label for="rate3" title="3 stars"></label>
-
-            <input type="radio" id="rate2" name="rating" value="2" />
-            <label for="rate2" title="2 stars"></label>
-
-            <input type="radio" id="rate1" name="rating" value="1" />
-            <label for="rate1" title="1 star"></label>
+<div class="container">
+    <div class="card bg-success text-white">
+        <h1 class="text-center mt-3">Κάρτα Βιβλιοθήκης</h1>
+        <div class="row">
+            <div class="col-md-4">
+                <p class="lead fw-bold">{{ user.name }}</p>
+                <p>Email: {{ user.email }}</p>
+                <p>Διεύθυνση: {{ user.address }}</p>
+                <p>Barcode: {{ user.barcode }}</p>
+            </div>
+            <div class="col-md-6 text-center">
+                <img src="data:image/png;base64,{{ barcode_image_base64 }}" alt="Barcode">
+            </div>
         </div>
-
-        <div class="form-group">
-            <label for="review">Review:</label>
-            <textarea class="form-control" id="review" placeholder="Write your review"></textarea>
-        </div>
-        <button type="button" class="btn btn-primary" onclick="submitReview()">Submit</button>
+        <!-- Add more user details or card elements as needed -->
     </div>
-
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script>
-        function submitReview() {
-            // Get the selected rating
-            var ratingInput = document.querySelector('input[name="rating"]:checked');
-            var selectedRating = ratingInput ? ratingInput.value : null;
-            console.log('Selected rating:', selectedRating);
-
-            // Get the review text
-            var reviewText = document.getElementById('review').value;
-            console.log('Review:', reviewText);
-
-            // Perform further actions, such as sending the rating and review to the server
-            // using AJAX or submitting a form
-
-            // Redirect to a different page after submitting the review
-            window.location.href = '/thank-you'; // Replace with your desired URL
-        }
-    </script>
+</div>
 </body>
 </html>

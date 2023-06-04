@@ -6,7 +6,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
         <meta name="description" content="" />
         <meta name="author" content="" />
-        <title>Static Navigation - SB Admin</title>
+        <title>Static Navigation - SB Operator</title>
         <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='/index_style.css') }}" />
         <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
     </head>
@@ -93,9 +93,9 @@
                                 </nav>
                             </div>
                             <div class="sb-sidenav-menu-heading">Addons</div>
-                            <a class="nav-link" href="/operator/books">
+                            <a class="nav-link" href="/operator/users">
                                 <div class="sb-nav-link-icon"><i class="fas fa-chart-area"></i></div>
-                                Βιβλία
+                                Χρήστες
                             </a>
                             <a class="nav-link" href="tables.html">
                                 <div class="sb-nav-link-icon"><i class="fas fa-table"></i></div>
@@ -112,7 +112,7 @@
             <div id="layoutSidenav_content">
                 <main>
                     <div class="container-fluid px-4">
-                        <h1 class="mt-4">Πληροφορίες Βιβλίου</h1>
+                        <h1 class="mt-4">Πληροφορίες Χρήστη</h1>
                         <ol class="breadcrumb mb-4">
                             <li class="breadcrumb-item"><a href="index.html">Dashboard</a></li>
                             <li class="breadcrumb-item active">Προφίλ</li>
@@ -129,27 +129,31 @@
                         {% endwith %}
                         <div class="row">
                             <div class="col-md-3 border-right">
-                                <div class="d-flex flex-column align-items-center text-center p-3 py-5"><img class="img-thumbnail mt-5" width="150px" src="{{ book['image'] }}"><span class="font-weight-bold">{{ book['title']}}</span></div>
+                                <div class="d-flex flex-column align-items-center text-center p-3 py-5"><img class="img-thumbnail mt-5" width="150px" src="{{ user['profile'] }}"><span class="font-weight-bold">{{ user['username']}}</span></div>
                             </div>
                             <div class="col-md-5 border-right">
                                 <div class="p-3 py-5">
                                     <div class="d-flex justify-content-between align-items-center mb-3">
-                                        <h4 class="text-right">Πληροφορίες Βιβλίου</h4>
+                                        <h4 class="text-right">Πληροφορίες Χρήστη</h4>
                                     </div>
-                                    <form id="updateForm" method="POST" action="/update_book_details">
-                                    <div class="row mt-2">
-                                        <div class="col-md-12"><label class="labels">Βιβλίο</label><input type="text" class="form-control" name="title" value="{{ book['title'] }}"></div>
-                                        <div class="col-md-12"><label class="labels">Συγγραφείς</label><input type="text" class="form-control" name="author" value="{{ book['name'] }}" ></div>
-                                        <div class="col-md-12"><label class="labels">Αριθμός Σελίδων</label><input type="number" class="form-control" name="no_pages" placeholder="number of pages" value="{{ book['no_pages'] }}" ></div>
-                                        <div class="col-md-12"><label class="labels">Γλώσσα</label><input type="text" class="form-control" placeholder="enter address line 1" name="language" value="{{ book['language'] }}" ></div>
-                                        <div class="col-md-12"><label class="labels">Έτος έκδοσης</label><input type="text" class="form-control" placeholder="enter address line 2" name="year_published" value="{{ book['year_published'] }}"></div>
-                                        <div class="col-md-12"><label class="labels">ISBN</label><input type="text" class="form-control" placeholder="enter address line 2" name="ISBN" value="{{ book['ISBN'] }}" readonly></div>
-                                        <div class="col-md-12"><label class="labels">IMG</label><input type="text" class="form-control" placeholder="enter address line 2" name="image" value="{{ book['image'] }}" ></div>
+{#                                    <form id="updateForm" method="POST" action="{{ }}">#}
+                                   <div class="row mt-2">
+                                      <div class="col-md-6"><label class="labels">Όνομα</label><input type="text" class="form-control" value="{{ user['first_name'] }}"></div>
+                                      <div class="col-md-6"><label class="labels">Επώνυμο</label><input type="text" class="form-control" value="{{ user['surname'] }}"></div>
+                                    </div>
+                                    <div class="row mt-3">
+                                        <div class="col-md-12"><label class="labels">Ημερομηνία Γέννησης</label><input type="date" class="form-control" name="birth_date" placeholder="Eισάγετε ημερομηνία γέννησης" value="{{ user['birth_date'] }}"></div>
+                                        <div class="col-md-12"><label class="labels">Σχολείο</label><input type="text" class="form-control" placeholder="enter address line 1" value="{{ user['school_name'] }}"></div>
+                                        <div class="col-md-12"><label class="labels">email</label><input type="text" class="form-control" name="email" placeholder="enter address line 2" value="{{ user['email'] }}"></div>
+                                        <div class="col-md-12"><label class="labels">barcode</label><input type="text" class="form-control" placeholder="enter address line 2" value="{{ user['barcode'] }}"></div>
+                                        <div class="col-md-12"><label class="labels">Εικόνα προφίλ</label><input type="text" class="form-control" name="profile" placeholder="enter address line 2" value="{{ user['profile'] }}"></div>
                                     </div>
                                     <div class="mt-5 text-center">
                                         <button class="btn btn-success profile-button" type="submit">Ενημέρωση στοιχείων</button>
+<button class="btn btn-success profile-button" onclick="window.open('{{ url_for('library_card') }}', '_blank')">Εκτύπωση της κάρτας βιβλιοθήκης</button>
+
                                     </div>
-                                    </form>
+{#                                    </form>#}
                                 </div>
                             </div>
                         </div>

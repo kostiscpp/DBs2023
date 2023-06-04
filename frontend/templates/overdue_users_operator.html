@@ -8,11 +8,10 @@
     <meta name="description" content=""/>
     <meta name="author" content=""/>
     <title>Δίκτυο Σχολικών Βιβλιοθηκών</title>
+    <link href="https://cdn.datatables.net/1.11.4/css/jquery.dataTables.min.css" rel="stylesheet" />
+    <link href="../../static/index_style.css" rel="stylesheet" />
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
-
-    <link href="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/style.min.css" rel="stylesheet"/>
-    <link href="../../static/index_style.css" rel="stylesheet"/>
+    <script src="https://cdn.datatables.net/1.11.4/js/jquery.dataTables.min.js"></script>
     <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
 </head>
 
@@ -116,7 +115,7 @@
                         </nav>
                     </div>
                     <div class="sb-sidenav-menu-heading">Addons</div>
-                    <a class="nav-link" href="/user/books">
+                    <a class="nav-link" href="/operator/books">
                         <div class="sb-nav-link-icon"><i class="fas fa-chart-area"></i></div>
                         Βιβλία
                     </a>
@@ -139,109 +138,42 @@
                 <ol class="breadcrumb mb-4">
                     <li class="breadcrumb-item active">Dashboard</li>
                 </ol>
-                <form action="/admin/analytics/most_checkouts" method="GET">
-                    <div class="row">
-                        <div class="row justify-content-center">
-                            <div class="col-md-6 mb-4">
-                                <h3 id="pageTitle">Βρες τους μαθητές με τους περισσότερους δανεισμούς με ηλικία κάτω των
-                                    40 ετών:</h3>
-                            </div>
-                        </div>
+                <h3 class="mt-4 mb-4">Χρήστες που έχουν καθυστερήσει βιβλίο και δεν έχουν το επιστρέψει</h3>
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <i class="fas fa-table me-1"></i>
+                        Βιβλία
                     </div>
-                    <div class="row">
-                        <div class="row justify-content-center">
-                            <div class="col-md-3 mb-4">
-                                <label for="role">Είδος χρήστη:</label>
-                                <select class="form-select" id="role" name="role"
-                                        onchange="updatePageTitle()">
-                 1                   <option value="student">Μαθητές</option>
-                                    <option value="teacher">Εκπαιδευτικοί</option>
-                                    <option value="both">Μαθητές και εκπαιδευτικοί</option>
-                                </select>
-                                <div class="col-md-12 mb-1">
-                                    <label for="age">Ηλικία:</label>
-                                    <input type="range" id="age" name="age" min="2" max="78" style="width: 120%"
-                                           oninput="updatePageTitle()">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </form>
-                <form action="/admin/analytics/most_checkouts" method="POST" onsubmit="loadDataTable({{ users }});">
-                    <div class="row">
-                        <div class="row justify-content-center">
-                            <div class="col-md-1 mb-4">
-                                <button class="btn btn-success" id="btnMostCheckouts" type="submit"
-                                >Υποβολή
-                                    <input type="hidden" name="rrole">
-                                    <input type="hidden" name="aage">
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card mb-4">
-                        <div class="card-header">
-                            <i class="fas fa-table me-1"></i>
-                            Βιβλία
-                        </div>
-                        <div class="card-body">
-                            <table id="dataTableMoreCheckouts" class="table table-striped">
-                                <thead>
+                    <div class="card-body">
+                        <table id="authorsTable" class="table table-striped">
+                            <thead>
+                            <tr>
+                                <th class="w-30">Ονοματεπώνυμο χρήστη</th>
+                                <th>Τίτλος βιβλίου</th>
+                                <th>Αριθμός ημερών</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for user in users %}
                                 <tr>
-                                    <th>Ονοματεπώνυμο</th>
-                                    <th>Ηλικία</th>
-                                    <th>Σχολείο</th>
-                                    <th>Πόλη</th>
-                                    <th>Πλήθος δανεισμένων βιβλίων</th>
+                                    <td>{{ user.name }} </td>
+                                    <td>{{ user.title }} </td>
+                                    <td>{{ user.days_passed }} </td>
                                 </tr>
-                                </thead>
-                                <tbody>
-                                {% for user in users %}
-                                    <tr>
-                                        <td>{{ user.name }}</td>
-                                        <td>{{ user.age }}</td>
-                                        <td>{{ user.school }}</td>
-                                        <td>{{ user.city }}</td>
-                                        <td>{{ user.total_checkouts }}</td>
-                                    </tr>
-                                {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
+                            {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
-                </form>
+                </div>
             </div>
-            <script>
-                function updatePageTitle() {
-                    var selectElement = document.getElementById("role");
-                    var pageTitleElement = document.getElementById("pageTitle");
-                    var ageInput = document.getElementById("age");
-                    var selectedOption = selectElement.value;
-                    var ageValue = ageInput.value;
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.4/js/jquery.dataTables.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#authorsTable').DataTable();
+        });
+    </script>
 
-                    switch (selectedOption) {
-                        case "student":
-                            pageTitleElement.innerHTML = "Βρες τους μαθητές με τους περισσότερους δανεισμούς με ηλικία κάτω των " + ageValue + " ετών:";
-                            break;
-                        case "teacher":
-                            pageTitleElement.innerHTML = "Βρες τους εκπαιδευτικούς με τους περισσότερους δανεισμούς με ηλικία κάτω των " + ageValue + " ετών:";
-                            break;
-                        case "both":
-                            pageTitleElement.innerHTML = "Βρες τους μαθητές και τους εκπαιδευτικούς με τους περισσότερους δανεισμούς με ηλικία κάτω των " + ageValue + " ετών:";
-                            break;
-                    }
-                }
-
-
-                function loadDataTable(users) {
-                    var ageInput = document.getElementById("age").value;
-                    var roleInput = document.getElementById("role").value;
-                    var age = document.getElementsByName("aage")[0];
-                    age.value = ageInput;
-                    var role = document.getElementsByName("rrole")[0];
-                    role.value = roleInput;
-                }
-            </script>
         </main>
         <footer class="py-4 bg-light mt-auto">
             <div class="container-fluid px-4">
@@ -259,12 +191,8 @@
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
         crossorigin="anonymous"></script>
-
-
 <script src="../../static/scripts.js"></script>
-{#<script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>#}
-{#<script src="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/umd/simple-datatables.min.js"#}
-{#        crossorigin="anonymous"></script>#}
+<script src="../../static/search_book_user_script.js"></script>
 </body>
 
 </html>
