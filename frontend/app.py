@@ -34,6 +34,7 @@ def set_env():
     backups_dir = config.get('dbenv', 'backups_dir')
     backups_to_keep = config.get('dbenv', 'backups_to_keep')
 
+
 def create_directory(directory):
     try:
         if not os.path.exists(directory):
@@ -44,20 +45,24 @@ def create_directory(directory):
     except OSError as e:
         print(f"Error creating directory '{directory}': {str(e)}")
 
-def perform_FULL_backup (source_db):
-#    set_env()
+
+def perform_FULL_backup(source_db):
+    #    set_env()
     create_directory(backups_dir)
     try:
-        print ("----Η διαδικασία Backup για την βάση δεδομένων " + source_db + " ξεκίνησε : " + time.strftime('%Y%m%d-%H%M%S'))
-        #FULL (SCHEMA+DATA) Backup
+        print("----Η διαδικασία Backup για την βάση δεδομένων " + source_db + " ξεκίνησε : " + time.strftime(
+            '%Y%m%d-%H%M%S'))
+        # FULL (SCHEMA+DATA) Backup
         _source_db = " -u " + db_user + " -p" + db_user_password + " -h " + db_host + " " + source_db
         _options = " --single-transaction --quick --add-drop-table --add-drop-trigger --events --routines --triggers "
         _sqlfile = backups_dir + source_db + "_FULL_" + time.strftime('%Y%m%d-%H%M%S') + ".sql"
         cmd = MYSQLDUMP + _source_db + _options + " --add-drop-database " + " --result-file " + _sqlfile
         p = subprocess.run(cmd, shell=True, timeout=None, check=True)
-        print ("----Η διαδικασία Backup για την βάση δεδομένων " + source_db + " ολοκληρώθηκε : " + time.strftime('%Y%m%d-%H%M%S'))
-        print ("----Δημιουργήθηκε το SQL backup file " + _sqlfile + " στο " + backups_dir + " directory")
-        print ("----Στο directory " + " " + backups_dir + " διατηρούμε αποθηκεύμενα  τα τελευταία " + backups_to_keep + " files")
+        print("----Η διαδικασία Backup για την βάση δεδομένων " + source_db + " ολοκληρώθηκε : " + time.strftime(
+            '%Y%m%d-%H%M%S'))
+        print("----Δημιουργήθηκε το SQL backup file " + _sqlfile + " στο " + backups_dir + " directory")
+        print(
+            "----Στο directory " + " " + backups_dir + " διατηρούμε αποθηκεύμενα  τα τελευταία " + backups_to_keep + " files")
         os.stat(backups_dir)
         # Get list of all FULL Backup files
         FILE_pattern = backups_dir + source_db + "*FULL*.sql"
@@ -68,15 +73,16 @@ def perform_FULL_backup (source_db):
         files_to_keep = files[-int(backups_to_keep):]
         # Delete the remaining files
         for file in files:
-           if file not in files_to_keep:
-               os.remove(file)
+            if file not in files_to_keep:
+                os.remove(file)
     except subprocess.CalledProcessError as e:
-            print("----Exception: Subprocess error occurred. Return code: " + str(e.returncode))
+        print("----Exception: Subprocess error occurred. Return code: " + str(e.returncode))
     except Exception as e:
-            print("----Exception: ActiveDB perform backup failed. " + str(e))
+        print("----Exception: ActiveDB perform backup failed. " + str(e))
 
-def perform_FULL_restore(source_db,target_db,custom = False):
-#    set_env()
+
+def perform_FULL_restore(source_db, target_db, custom=False):
+    #    set_env()
     # Check if BACKUPS_DIR exists else mkdir
     try:
         os.stat(backups_dir)
@@ -89,24 +95,25 @@ def perform_FULL_restore(source_db,target_db,custom = False):
         lastfile = files[-1]
         try:
             # FULL (SCHEMA+DATA) Restore Started
-            print ("----Η διαδικασία Restore για την εφεδρική (standby) βάση δεδομένων " + target_db )
-            print ("----ξεκίνησε : " + time.strftime('%Y%m%d-%H%M%S'))
-            print ("----Xρησιμοποιώντας το τελευταίο backup file: " + lastfile)
-            print ("----απο την ενεργή (active) βάση δεδομένων " + source_db)
+            print("----Η διαδικασία Restore για την εφεδρική (standby) βάση δεδομένων " + target_db)
+            print("----ξεκίνησε : " + time.strftime('%Y%m%d-%H%M%S'))
+            print("----Xρησιμοποιώντας το τελευταίο backup file: " + lastfile)
+            print("----απο την ενεργή (active) βάση δεδομένων " + source_db)
             _options = " -u " + db_user + " -p" + db_user_password + " -h " + db_host
             _create_db = " -e \"DROP DATABASE IF EXISTS " + target_db + ";CREATE DATABASE " + target_db + ";SHOW DATABASES \""
             cmd = MYSQL + _options + _create_db
             _options = " -u " + db_user + " -p" + db_user_password + " -h " + db_host + " " + target_db
             cmd = MYSQL + _options + " < " + lastfile
             p = subprocess.run(cmd, shell=True, timeout=None, check=True)
-            print ("----Η διαδικασία Restore για την εφεδρική (standby) βάση δεδομένων " + target_db)
-            print ("----ολοκληρώθηκε με επιτυχία " + time.strftime('%Y%m%d-%H%M%S') )
+            print("----Η διαδικασία Restore για την εφεδρική (standby) βάση δεδομένων " + target_db)
+            print("----ολοκληρώθηκε με επιτυχία " + time.strftime('%Y%m%d-%H%M%S'))
         except subprocess.CalledProcessError as e:
             print("----Exception: Subprocess error occurred. Return code: " + str(e.returncode))
         except Exception as e:
             print("----Exception: StandbyDB restore failed. " + str(e))
     except Exception as e:
         print("No backups found...Failed to perform restore" + str(e))
+
 
 set_env()
 
@@ -118,6 +125,8 @@ conn = pymysql.connect(
     charset='utf8mb4',
     cursorclass=pymysql.cursors.DictCursor
 )
+
+
 @app.route('/admin/login', methods=['GET', 'POST'])
 def login_admin():
     # Output message if something goes wrong...
@@ -191,20 +200,20 @@ def login_user():
     return redirect(url_for('main'))
 
 
-
 def checkout_data():
-        user_id = session['user_id']
-        query = """
+    user_id = session['user_id']
+    query = """
             SELECT
                 (SELECT COUNT(*) FROM checkout WHERE checkout.user_id = %s AND checkout.checkout_status = 'active') AS active_checkouts,
                 (SELECT COUNT(*) FROM checkout WHERE checkout.user_id = %s AND checkout.checkout_status = 'returned' OR checkout.checkout_status = 'overdue-returned') AS total_checkouts,
                 (SELECT COUNT(*) FROM checkout WHERE checkout.user_id = %s AND checkout.checkout_status = 'overdue') AS overdue_checkouts,
                 (SELECT COUNT(*) FROM hold WHERE hold.user_id = %s AND hold.hold_status = 'active') AS active_holds;
         """
-        cursor = conn.cursor()
-        cursor.execute(query, (user_id, user_id, user_id, user_id,))
-        checkouts_data = cursor.fetchone()
-        return checkouts_data
+    cursor = conn.cursor()
+    cursor.execute(query, (user_id, user_id, user_id, user_id,))
+    checkouts_data = cursor.fetchone()
+    return checkouts_data
+
 
 @app.route('/user/register', methods=['GET', 'POST'])
 def register():
@@ -215,10 +224,13 @@ def register():
         cursor = conn.cursor()
         cursor.execute(query)
         schools = cursor.fetchall()
-        return render_template('register.html', schools = schools)
-    if request.method == 'POST' and all(field in request.form for field in ['username', 'password', 'first_name', 'surname', 'birth_date', 'barcode', 'email', 'role', 'school_name']):
+        return render_template('register.html', schools=schools)
+    if request.method == 'POST' and all(field in request.form for field in
+                                        ['username', 'password', 'first_name', 'surname', 'birth_date', 'barcode',
+                                         'email', 'role', 'school_name']):
         # Create variables for easy access
-        credentials = [request.form.get(field) for field in ['first_name', 'surname', 'username', 'password', 'birth_date', 'email', 'role','school_name']]
+        credentials = [request.form.get(field) for field in
+                       ['first_name', 'surname', 'username', 'password', 'birth_date', 'email', 'role', 'school_name']]
         print(credentials)
         # Check if account exists using MySQL
         cursor = conn.cursor()
@@ -227,7 +239,9 @@ def register():
         if result:
             school_id = result['school_id']
             try:
-                cursor.execute('INSERT INTO user (first_name, surname, username, pwd, birth_date, email, role, school_id) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)', tuple(credentials[:-1] + [school_id]))
+                cursor.execute(
+                    'INSERT INTO user (first_name, surname, username, pwd, birth_date, email, role, school_id) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)',
+                    tuple(credentials[:-1] + [school_id]))
                 conn.commit()
                 cursor.close()
                 return redirect('/user/login')
@@ -239,6 +253,7 @@ def register():
 
     return render_template('register.html')
 
+
 @app.route('/operator_register', methods=['GET', 'POST'])
 def operator_register():
     if request.method == 'GET':
@@ -248,28 +263,32 @@ def operator_register():
         cursor = conn.cursor()
         cursor.execute(query)
         schools = cursor.fetchall()
-        return render_template('operator_register.html', schools = schools)
+        return render_template('operator_register.html', schools=schools)
     if request.method == 'POST':
         cursor = conn.cursor()
         cursor.execute('SELECT special_key FROM school WHERE school_id = %s', (request.form.get('school_id'),))
         specialKey = cursor.fetchone()['special_key']
         if specialKey == request.form['special_key']:
-        # Create variables for easy access
-            credentials = [request.form.get(field) for field in ['first_name', 'surname', 'username', 'password', 'birth_date', 'email', 'school_id']]
-        # Check if account exists using MySQL
+            # Create variables for easy access
+            credentials = [request.form.get(field) for field in
+                           ['first_name', 'surname', 'username', 'password', 'birth_date', 'email', 'school_id']]
+            # Check if account exists using MySQL
             print(credentials)
             try:
-               cursor.execute('INSERT INTO user (first_name, surname, username, pwd, birth_date, email, role, school_id) VALUES (%s, %s, %s, %s, %s, %s, "operator", %s)', tuple(credentials))
-               conn.commit()
-               cursor.close()
-               return redirect('/user/login')
+                cursor.execute(
+                    'INSERT INTO user (first_name, surname, username, pwd, birth_date, email, role, school_id) VALUES (%s, %s, %s, %s, %s, %s, "operator", %s)',
+                    tuple(credentials))
+                conn.commit()
+                cursor.close()
+                return redirect('/user/login')
             except Exception as e:
-               error_message = 'An error occurred during registration. Please try again.'
-               # Log the error or handle it appropriately
+                error_message = 'An error occurred during registration. Please try again.'
+                # Log the error or handle it appropriately
         else:
-           error_message = 'This school does not exist!'
+            error_message = 'This school does not exist!'
 
     return render_template('operator_register.html')
+
 
 @app.route('/main', methods=['GET', 'POST'])
 def go_to_main():
@@ -295,7 +314,8 @@ def go_to_main_operator():
 @app.route('/user/main', methods=['GET', 'POST'])
 def go_to_main_user():
     checkouts = checkout_data()
-    return render_template('index_user.html',checkouts=checkouts)
+    return render_template('index_user.html', checkouts=checkouts)
+
 
 @app.route('/admin/profile', methods=['GET', 'POST'])
 def profile_admin():
@@ -312,6 +332,7 @@ def profile_admin():
     user = cursor.fetchone()
     return render_template('profile_admin.html', user=user)
 
+
 @app.route('/operator/profile', methods=['GET', 'POST'])
 def profile_operator():
     username = session['username']
@@ -326,6 +347,7 @@ def profile_operator():
     cursor.execute(query, (username,))
     user = cursor.fetchone()
     return render_template('profile_operator.html', user=user)
+
 
 @app.route('/user/profile', methods=['GET', 'POST'])
 def profile_user():
@@ -344,7 +366,8 @@ def profile_user():
     else:
         return render_template('profile_student.html', user=user)
 
-@app.route('/activity_log',methods=['GET','POST'])
+
+@app.route('/activity_log', methods=['GET', 'POST'])
 def activity_log_user():
     username = session['username']
     schoolID = int(session['school_id'])
@@ -368,11 +391,11 @@ def activity_log_user():
         WHERE u.username = %s AND r.review_status = 'accepted';
     """
     cursor = conn.cursor()
-    cursor.execute(review_query, (username, ))
+    cursor.execute(review_query, (username,))
     reviews = cursor.fetchall()
-    print(schoolID )
+    print(schoolID)
     print(reviews)
-    return render_template('activity_log_user.html',checkouts = checkouts, reviews=reviews)
+    return render_template('activity_log_user.html', checkouts=checkouts, reviews=reviews)
 
 
 @app.route('/search_book', methods=['GET', 'POST'])
@@ -384,6 +407,7 @@ def search_book_redirect():
         return redirect(url_for('search_book_operator'))
     elif role == 'student' or role == 'teacher':
         return redirect(url_for('search_book_user'))
+
 
 @app.route('/user/books', methods=['GET'])
 def search_book_user():
@@ -493,6 +517,7 @@ def book_details_user(book):
     book_data = cursor.fetchone()
     return render_template('book_details_user.html', book=book_data)
 
+
 @app.route('/admin/books', methods=['GET'])
 def search_book_admin():
     schoolID = session['school_id']
@@ -506,6 +531,7 @@ def search_book_admin():
     cursor.execute(query)
     books = cursor.fetchall()
     return render_template('book_search_admin.html', books=books)
+
 
 @app.route('/operator/books', methods=['GET'])
 def search_book_operator():
@@ -525,33 +551,33 @@ def search_book_operator():
 
 @app.route('/operator/books', methods=['POST'])
 def operator_search_result():
-        searchType = request.form['searchType']
-        searchKey = request.form['searchKey']
-        schoolID = session['school_id']
-        # view_name = "view_school_" + str(schoolID)
+    searchType = request.form['searchType']
+    searchKey = request.form['searchKey']
+    schoolID = session['school_id']
+    # view_name = "view_school_" + str(schoolID)
 
-        if searchType == 'title':
-            query = """ 
+    if searchType == 'title':
+        query = """ 
             SELECT DISTINCT vs.title, a.name, vs.available_copies_number, vs.book_copies_number 
             FROM view_school vs 
             JOIN book_to_author b2a ON b2a.ISBN = vs.ISBN 
             JOIN author a ON a.author_id = b2a.author_id 
             WHERE vs.school_id = {} AND vs.title LIKE %s
             """.format(schoolID)
-            cursor = conn.cursor()
-            cursor.execute(query, ('%' + searchKey + '%',))
-        elif searchType == 'author':
-            query = """ 
+        cursor = conn.cursor()
+        cursor.execute(query, ('%' + searchKey + '%',))
+    elif searchType == 'author':
+        query = """ 
             SELECT DISTINCT vs.title, a.name, vs.available_copies_number, vs.book_copies_number 
             FROM view_school vs 
             JOIN book_to_author b2a ON b2a.ISBN = vs.ISBN 
             JOIN author a ON a.author_id = b2a.author_id 
             WHERE vs.school_id = {} AND a.name LIKE %s
             """.format(schoolID)
-            cursor = conn.cursor()
-            cursor.execute(query, ('%' + searchKey + '%',))
-        elif searchType == 'category':
-            query = """ 
+        cursor = conn.cursor()
+        cursor.execute(query, ('%' + searchKey + '%',))
+    elif searchType == 'category':
+        query = """ 
             SELECT DISTINCT vs.title, a.name, vs.available_copies_number, vs.book_copies_number 
             FROM view_school vs 
             JOIN book_to_category b2c ON vs.ISBN = b2c.ISBN 
@@ -560,33 +586,34 @@ def operator_search_result():
             JOIN author a ON b2a.author_id = a.author_id 
             WHERE vs.school_id = {} AND c.name LIKE %s
             """.format(schoolID)
-            cursor = conn.cursor()
-            cursor.execute(query, ('%' + searchKey + '%',))
-        elif searchType == 'keyword':
-            query = """ 
+        cursor = conn.cursor()
+        cursor.execute(query, ('%' + searchKey + '%',))
+    elif searchType == 'keyword':
+        query = """ 
             SELECT DISTINCT vs.title, a.name, vs.available_copies_number, vs.book_copies_number 
             FROM view_school vs 
             JOIN book_to_author b2a ON vs.ISBN = b2a.ISBN 
             JOIN author a ON b2a.author_id = a.author_id
             WHERE vs.school_id = {} AND vs.keywords LIKE %s
             """.format(schoolID)
-            cursor = conn.cursor()
-            cursor.execute(query, ('%' + searchKey + '%',))
-        elif searchType == 'ISBN':
-            query = """ 
+        cursor = conn.cursor()
+        cursor.execute(query, ('%' + searchKey + '%',))
+    elif searchType == 'ISBN':
+        query = """ 
             SELECT DISTINCT vs.title, a.name, vs.available_copies_number, vs.book_copies_number 
             FROM view_school vs 
             JOIN book_to_author b2a ON vs.ISBN = b2a.ISBN 
             JOIN author a ON b2a.author_id = a.author_id
             WHERE vs.school_id = {} AND vs.ISBN LIKE %s
             """.format(schoolID)
-            cursor = conn.cursor()
-            cursor.execute(query, ('%' + searchKey + '%',))
-        else:
-            return 'Invalid search type'
+        cursor = conn.cursor()
+        cursor.execute(query, ('%' + searchKey + '%',))
+    else:
+        return 'Invalid search type'
 
-        books = cursor.fetchall()
-        return render_template('book_search_operator.html', books=books)
+    books = cursor.fetchall()
+    return render_template('book_search_operator.html', books=books)
+
 
 @app.route('/operator/books/<book>', methods=['GET', 'POST'])
 def book_details_operator(book):
@@ -605,6 +632,7 @@ def book_details_operator(book):
     cursor.execute(query, (book,))
     book_data = cursor.fetchone()
     return render_template('book_details_operator.html', book=book_data)
+
 
 @app.route('/admin/books/<book>', methods=['GET', 'POST'])
 def book_details_admin(book):
@@ -665,6 +693,7 @@ def book_add_review_user(book):
 
     return render_template('book_add_review_user.html', book=book)
 
+
 @app.route('/user/books/checkout/<book_copy_id>', methods=['GET'])
 def user_checkout_request(book_copy_id):
     try:
@@ -721,6 +750,7 @@ def search_users_operator():
     users = cursor.fetchall()
     return render_template('catalog_user_operator.html', users=users)
 
+
 @app.route('/operator/users', methods=['POST'])
 def user_operator_search_result():
     searchKey = request.form.get('searchKey')
@@ -736,6 +766,7 @@ def user_operator_search_result():
     users = cursor.fetchall()
     return render_template('catalog_user_operator.html', users=users)
 
+
 @app.route('/operator/users/<user>', methods=['GET', 'POST'])
 def user_details_operator(user):
     schoolID = session['school_id']
@@ -749,7 +780,8 @@ def user_details_operator(user):
     cursor = conn.cursor()
     cursor.execute(query, (schoolID, user))
     user_data = cursor.fetchone()
-    return render_template('user_details_operator.html', user = user_data)
+    return render_template('user_details_operator.html', user=user_data)
+
 
 @app.route('/admin/users', methods=['GET'])
 def search_users_admin():
@@ -758,6 +790,8 @@ def search_users_admin():
     cursor.execute(query)
     schools = cursor.fetchall()
     return render_template('catalog_user_admin.html', schools=schools)
+
+
 @app.route('/admin/users', methods=['POST'])
 def user_admin_search_result():
     searchKey = request.form.get('searchKey')
@@ -778,13 +812,13 @@ def user_admin_search_result():
     return render_template('catalog_user_admin.html', users=users, schools=schools)
 
 
-@app.route('/admin/users/<user>', methods = ['GET'])
+@app.route('/admin/users/<user>', methods=['GET'])
 def user_details_admin(user):
     query = """
     SELECT u.*, s.school_name FROM user u JOIN school s ON s.school_id = u.school_id WHERE u.username = %s
     """
     cursor = conn.cursor()
-    cursor.execute(query,(user,))
+    cursor.execute(query, (user,))
     user = cursor.fetchone()
     return render_template('user_details_admin.html', user=user)
 
@@ -803,7 +837,7 @@ def update_user_details():
     # Prepare the SQL statement to update the user's birth date and school
     update_query = "UPDATE `user` SET `birth_date` = %s, `email` = %s, `profile` = %s, `username` = %s WHERE `barcode` = %s"
     # Execute the update query
-    cursor.execute(update_query, (birth_date, email, profile, username,barcode,))
+    cursor.execute(update_query, (birth_date, email, profile, username, barcode,))
 
     # Commit the changes to the database
     conn.commit()
@@ -815,12 +849,12 @@ def update_user_details():
 
     flash('Οι αλλαγές αποθηκεύθηκαν', 'success')
 
-
     role = session['role']
     if role == 'admin':
         return redirect(url_for('user_details_admin', user=user['username']))
     elif role == 'operator':
         return redirect(url_for('user_details_operator', user=user['username']))
+
 
 @app.route('/update_profile', methods=['POST'])
 def update_profile():
@@ -853,6 +887,7 @@ def update_profile():
     elif role == 'teacher':
         return redirect('/user/profile')
 
+
 @app.route('/update_book_details', methods=['POST'])
 def update_book_details():
     # Get the updated form data
@@ -871,7 +906,7 @@ def update_book_details():
     update_query = "UPDATE `book` SET `title` = %s, `no_pages` = %s, `language` = %s, `year_published` = %s, `image`=%s WHERE `ISBN` = %s ;"
 
     # Execute the update query
-    cursor.execute(update_query, (title, no_pages, language, year_published, isbn,image))
+    cursor.execute(update_query, (title, no_pages, language, year_published, isbn, image))
 
     # Commit the changes to the database
     conn.commit()
@@ -879,12 +914,12 @@ def update_book_details():
 
     flash('Οι αλλαγές αποθηκεύθηκαν', 'success')
 
-
     role = session['role']
     if role == 'admin':
         return redirect('/admin/books')
     elif role == 'operator':
         return redirect('/operator/books')
+
 
 @app.route('/pending_holds', methods=['GET', 'POST'])
 def pending_holds_redirect():
@@ -911,6 +946,7 @@ def pending_holds_operator():
     holds = cursor.fetchall()
     return render_template('pending_holds_operator.html', holds=holds)
 
+
 @app.route('/operator/update_hold_status', methods=['GET', 'POST'])
 def update_hold_status_operator():
     hold_id = request.form['hold_id']
@@ -935,7 +971,8 @@ def update_hold_status_operator():
     cursor.close()
     return redirect('/operator/pending_holds')
 
-@app.route('/register_redirect', methods=['GET','POST'])
+
+@app.route('/register_redirect', methods=['GET', 'POST'])
 def register_monitoring_redirect():
     role = session['role']
     if role == 'operator':
@@ -944,11 +981,12 @@ def register_monitoring_redirect():
         return redirect(url_for('register_monitoring_admin'))
 
 
-@app.route('/register_op_admin_redirect', methods = ['GET','POST'])
+@app.route('/register_op_admin_redirect', methods=['GET', 'POST'])
 def register_op_redirect():
     return redirect(url_for('register_op_monitoring_admin'))
 
-@app.route('/admin/register_op_monitoring', methods=['GET','POST'])
+
+@app.route('/admin/register_op_monitoring', methods=['GET', 'POST'])
 def register_op_monitoring_admin():
     query = """
         SELECT u.*  FROM user u WHERE u.role = 'operator' AND u.status = 'pending';
@@ -957,6 +995,7 @@ def register_op_monitoring_admin():
     cursor.execute(query)
     operators = cursor.fetchall()
     return render_template('register_op_monitoring.html', operators=operators)
+
 
 @app.route('/admin/update_op_register_status', methods=['POST'])
 def update_register_status_admin():
@@ -968,34 +1007,39 @@ def update_register_status_admin():
     cursor = conn.cursor()
     cursor.execute(update_query, (user_id,))
     update_query = "UPDATE school SET operator_name = CONCAT(%s,' ',%s) WHERE school_id = %s;"
-    cursor.execute(update_query, (first_name, surname,school_id))
+    cursor.execute(update_query, (first_name, surname, school_id))
     conn.commit()
     cursor.close()
     return redirect('/admin/register_op_monitoring')
 
-@app.route('/school_list_admin_redirect', methods = ['GET','POST'])
+
+@app.route('/school_list_admin_redirect', methods=['GET', 'POST'])
 def school_list_redirect():
     return redirect(url_for('school_list_admin'))
 
-@app.route('/admin/school_list', methods = ['POST', 'GET'])
+
+@app.route('/admin/school_list', methods=['POST', 'GET'])
 def school_list_admin():
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM school;")
     schools = cursor.fetchall()
     return render_template('school_list.html', schools=schools)
 
-@app.route('/admin/register_school', methods=['GET','POST'])
+
+@app.route('/admin/register_school', methods=['GET', 'POST'])
 def register_school_admin():
     if request.method == 'POST':
         # Create variables for easy access'
-        credentials = [request.form.get(field) for field in ['school_name', 'address', 'city', 'phone', 'email', 'principal_name']]
+        credentials = [request.form.get(field) for field in
+                       ['school_name', 'address', 'city', 'phone', 'email', 'principal_name']]
         print(credentials)
         # Check if account exists using MySQL
         cursor = conn.cursor()
         query = """INSERT INTO 
         school(school_name, address, city, phone_number, email, principal_name, operator_name, special_key) 
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"""
-        specialKey = ''.join(random.choice(string.ascii_letters + string.digits + string.punctuation) for _ in range(16))
+        specialKey = ''.join(
+            random.choice(string.ascii_letters + string.digits + string.punctuation) for _ in range(16))
         cursor.execute(query, tuple(credentials + ['', specialKey]))
         conn.commit()
         cursor.close()
@@ -1003,7 +1047,7 @@ def register_school_admin():
     return render_template('register_school.html')
 
 
-@app.route('/operator/registers/register_monitoring', methods=['GET','POST'])
+@app.route('/operator/registers/register_monitoring', methods=['GET', 'POST'])
 def register_monitoring_operator():
     schoolID = session['school_id']
     query = """
@@ -1021,6 +1065,7 @@ def register_monitoring_operator():
         cursor.execute("SELECT school_name FROM school WHERE school_id = %s", schoolID)
         users[0]['school_id'] = cursor.fetchall()[0]['school_name']
     return render_template('register_monitoring_operator.html', users=users, no_users=no_users)
+
 
 @app.route('/operator/update_register_status', methods=['GET', 'POST'])
 def update_register_status_operator():
@@ -1044,7 +1089,8 @@ def update_register_status_operator():
     cursor.close()
     return redirect('/operator/registers/register_monitoring')
 
-@app.route('/checkout_redirect', methods=['GET','POST'])
+
+@app.route('/checkout_redirect', methods=['GET', 'POST'])
 def checkout_monitoring_redirect():
     role = session['role']
     if role == 'operator':
@@ -1052,7 +1098,8 @@ def checkout_monitoring_redirect():
     elif role == 'admin':
         return redirect(url_for('checkout_monitoring_admin'))
 
-@app.route('/operator/checkouts/checkout_monitoring', methods=['GET','POST'])
+
+@app.route('/operator/checkouts/checkout_monitoring', methods=['GET', 'POST'])
 def checkout_monitoring_operator():
     schoolID = session['school_id']
     query = """
@@ -1070,6 +1117,7 @@ def checkout_monitoring_operator():
     if len(checkouts) == 0:
         no_checkouts = True
     return render_template('checkout_monitoring_operator.html', checkouts=checkouts, no_checkouts=no_checkouts)
+
 
 @app.route('/return_book', methods=['GET', 'POST'])
 def return_book_redirect():
@@ -1099,6 +1147,8 @@ def return_book_admin():
     cursor.execute(query, (barcode, schoolID,))
     checkouts = cursor.fetchall()
     return render_template('return_book_admin.html', checkouts=checkouts)
+
+
 @app.route('/operator/return_book/result', methods=['GET', 'POST'])
 def return_book_operator():
     barcode = request.form.get('barcode')
@@ -1117,6 +1167,7 @@ def return_book_operator():
     checkouts = cursor.fetchall()
     return render_template('return_book_operator.html', checkouts=checkouts)
 
+
 @app.route('/admin/update_return_book', methods=['GET', 'POST'])
 def update_return_book_admin():
     user_id = request.form['user_id']
@@ -1128,6 +1179,7 @@ def update_return_book_admin():
     cursor.close()
     return redirect('/admin/return_book')
 
+
 @app.route('/operator/update_return_book', methods=['GET', 'POST'])
 def update_return_book_operator():
     user_id = request.form['user_id']
@@ -1138,6 +1190,8 @@ def update_return_book_operator():
     conn.commit()
     cursor.close()
     return redirect('/operator/return_book/result')
+
+
 @app.route('/create_checkout_redirect_operator')
 def create_checkout_redirect():
     role = session['role']
@@ -1146,7 +1200,8 @@ def create_checkout_redirect():
     elif role == 'operator':
         return redirect(url_for('create_checkout_operator'))
 
-@app.route('/operator/create_checkout', methods=['GET','POST'])
+
+@app.route('/operator/create_checkout', methods=['GET', 'POST'])
 def create_checkout_operator():
     if request.method == 'POST':
         schoolID = session['school_id']
@@ -1158,14 +1213,15 @@ def create_checkout_operator():
             cursor = conn.cursor()
             cursor.execute('SELECT copy_id FROM view_school WHERE (school_id = %s AND ISBN = %s);', (schoolID, isbn))
             copyID = cursor.fetchone()['copy_id']
-            cursor.execute('SELECT user_id FROM user WHERE (school_id = %s AND barcode = %s);', (schoolID,barcode,))
+            cursor.execute('SELECT user_id FROM user WHERE (school_id = %s AND barcode = %s);', (schoolID, barcode,))
             userID = cursor.fetchone()['user_id']
             if copyID and userID:
                 cursor.execute("INSERT INTO checkout(book_copy_id, user_id) VALUES (%s,%s);", (copyID, userID))
                 conn.commit()
     return render_template('create_checkout_operator.html')
 
-@app.route('/checkout/autocomplete/book', methods=['GET','POST'])
+
+@app.route('/checkout/autocomplete/book', methods=['GET', 'POST'])
 def autocomplete_book():
     isbn = request.args.get('isbn')  # Retrieve the 'isbn' parameter from the query string
     schoolID = session['school_id']
@@ -1184,6 +1240,7 @@ def autocomplete_book():
     # Return the books data as JSON response
     return books_json
 
+
 @app.route('/checkout/autocomplete/user', methods=['GET', 'POST'])
 def autocomplete_user():
     barcode = str(request.args.get('barcode'))
@@ -1199,6 +1256,8 @@ def autocomplete_user():
     users = cursor.fetchall()
     users_json = json.dumps(users)
     return users_json
+
+
 @app.route('/operator/pending_reviews', methods=['GET', 'POST'])
 def pending_reviews_operator():
     schoolID = session['school_id']
@@ -1213,6 +1272,7 @@ def pending_reviews_operator():
     cursor.execute(query, (schoolID,))
     reviews = cursor.fetchall()
     return render_template('pending_reviews_operator.html', reviews=reviews)
+
 
 @app.route('/operator/update_review_status', methods=['GET', 'POST'])
 def update_review_status_operator():
@@ -1240,11 +1300,13 @@ def update_review_status_operator():
     cursor.close()
     return redirect('/operator/pending_reviews')
 
+
 @app.route('/admin/analytics/query311')
 def query311_redirect():
     return redirect(url_for('query311'))
 
-@app.route('/admin/analytics/total_checkouts_per_school', methods=['GET','POST'])
+
+@app.route('/admin/analytics/total_checkouts_per_school', methods=['GET', 'POST'])
 def query311():
     time_unit = request.form.get('time_unit')
     ch_attribute = request.form.get('ch_attribute')
@@ -1256,7 +1318,7 @@ def query311():
             FROM checkout c
             JOIN book_copy bc ON c.book_copy_id = bc.copy_id
             JOIN school s ON bc.school_id = s.school_id
-            WHERE """ + time_unit +"(c."+ ch_attribute +")" + """= %s
+            WHERE """ + time_unit + "(c." + ch_attribute + ")" + """= %s
             GROUP BY s.school_id;
         """
         cursor = conn.cursor()
@@ -1269,7 +1331,8 @@ def query311():
 def query312_redirect():
     return redirect(url_for('query312'))
 
-@app.route('/admin/analytics/author_and_teacher-fans', methods=['GET','POST'])
+
+@app.route('/admin/analytics/author_and_teacher-fans', methods=['GET', 'POST'])
 def query312():
     category = request.form.get('category')
     authors = {}
@@ -1302,7 +1365,8 @@ def query312():
 def query313_redirect():
     return render_template('query313.html')
 
-@app.route('/admin/analytics/most_checkouts', methods=['GET','POST'])
+
+@app.route('/admin/analytics/most_checkouts', methods=['GET', 'POST'])
 def query313():
     role = request.form.get('rrole')
     age = str(request.form.get('aage'))
@@ -1336,13 +1400,15 @@ def query313():
         cursor.execute(query, (age,))
         users = cursor.fetchall()
     print(users)
-    return render_template('query313.html', users = users)
+    return render_template('query313.html', users=users)
+
 
 @app.route('/admin/analytics/query314')
 def query314_redirect():
     return redirect(url_for('query314'))
 
-@app.route('/admin/analytics/lonely_authors', methods=['GET','POST'])
+
+@app.route('/admin/analytics/lonely_authors', methods=['GET', 'POST'])
 def query314():
     query = """
         SELECT a.name,
@@ -1364,13 +1430,15 @@ def query314():
     cursor = conn.cursor()
     cursor.execute(query)
     authors = cursor.fetchall()
-    return render_template('query314.html', authors = authors)
+    return render_template('query314.html', authors=authors)
+
 
 @app.route('/admin/analytics/query315')
 def query315_redirect():
     return redirect(url_for('query315'))
 
-@app.route('/admin/analytics/successful_operators', methods=['GET','POST'])
+
+@app.route('/admin/analytics/successful_operators', methods=['GET', 'POST'])
 def query315():
     query = """
         SELECT s.school_name, s.operator_name, s.city, COUNT(*) AS book_count
@@ -1384,13 +1452,15 @@ def query315():
     cursor = conn.cursor()
     cursor.execute(query)
     schools = cursor.fetchall()
-    return render_template('query315.html', schools = schools)
+    return render_template('query315.html', schools=schools)
+
 
 @app.route('/admin/analytics/query316')
 def query316_redirect():
     return redirect(url_for('query316'))
 
-@app.route('/admin/analytics/top3-categories', methods=['GET','POST'])
+
+@app.route('/admin/analytics/top3-categories', methods=['GET', 'POST'])
 def query316():
     query = """
         SELECT c1.name AS category1, c2.name AS category2, COUNT(*) AS num_books
@@ -1409,33 +1479,48 @@ def query316():
     cursor = conn.cursor()
     cursor.execute(query)
     categories = cursor.fetchall()
-    return render_template('query316.html', categories = categories)
+    return render_template('query316.html', categories=categories)
+
+
 @app.route('/admin/analytics/query317')
 def query317_redirect():
     return redirect(url_for('query317'))
 
-@app.route('/admin/analytics/unsuccessful_authors', methods=['GET','POST'])
+
+@app.route('/admin/analytics/unsuccessful_authors', methods=['GET', 'POST'])
 def query317():
     query = """
-        SELECT a.author_id, a.name, COUNT(*) AS book_count
-        FROM book_to_author bta
-        JOIN author a ON bta.author_id = a.author_id
-        JOIN book b ON bta.isbn = b.isbn
-        GROUP BY a.author_id, a.name
-        HAVING COUNT(*) <= (SELECT MAX(book_count) - 5
-                FROM (SELECT COUNT(*) AS book_count
-                      FROM book_to_author
-                      GROUP BY author_id) AS counts)
-        ORDER BY book_count DESC, name ASC;
-    """
+            SELECT
+    s.school_name,
+    s.operator_name,
+    s.city,
+    t.book_count
+            FROM school s 
+            JOIN (SELECT book_count FROM (SELECT u.school_id, COUNT(*) AS book_count
+                FROM checkout c JOIN user u ON c.user_id = u.user_id
+                    WHERE c.checkout_time BETWEEN DATE_SUB(CURDATE(), INTERVAL 1 YEAR) AND CURDATE()
+                        GROUP BY u.school_id
+                        HAVING COUNT(*) > 20
+                    ) t1
+                    GROUP BY book_count HAVING COUNT(*) > 1
+                ) t ON t.book_count = (
+                    SELECT COUNT(*)
+                    FROM checkout c JOIN user u ON c.user_id = u.user_id
+                    WHERE c.checkout_time BETWEEN DATE_SUB(CURDATE(), INTERVAL 1 YEAR) AND CURDATE() AND u.school_id = s.school_id
+                    GROUP BY u.school_id HAVING COUNT(*) > 20
+                )
+            ORDER BY t.book_count DESC;
+"""
     cursor = conn.cursor()
     cursor.execute(query)
     authors = cursor.fetchall()
-    return render_template('query317.html', authors = authors)
+    return render_template('query317.html', authors=authors)
+
 
 @app.route('/operator/analytics/overdue_users_redirect')
 def overdue_users_redirect():
     return redirect(url_for('overdue_users'))
+
 
 @app.route('/operator/analytics/overdue_users')
 def overdue_users():
@@ -1450,13 +1535,15 @@ def overdue_users():
         ORDER BY days_passed,vsu.surname DESC;
     """
     cursor = conn.cursor()
-    cursor.execute(query,(schoolID,))
+    cursor.execute(query, (schoolID,))
     users = cursor.fetchall()
     return render_template('overdue_users_operator.html', users=users)
+
 
 @app.route('/operator/analytics/reviews_redirect')
 def review_analysis_operatorredirect():
     return redirect(url_for('review_analysis_operator'))
+
 
 @app.route('/operator/analytics/reviews')
 def review_analysis_operator():
@@ -1485,15 +1572,18 @@ def review_analysis_operator():
     cursor = conn.cursor()
     cursor.execute(query2, (schoolID,))
     users2 = cursor.fetchall()
-    return render_template('review_analysis_operator.html', users1=users1, users2 = users2)
+    return render_template('review_analysis_operator.html', users1=users1, users2=users2)
+
 
 @app.route('/admin/dbutils/swoverinfo')
 def switchoverinfo():
     return render_template('swoverinfo.html')
 
+
 @app.route('/admin/dbutils/begin_backupDB')
 def backup_select():
     return render_template('backup.html')
+
 
 @app.route('/admin/dbutils/backupDB')
 def perform_backup():
@@ -1506,38 +1596,33 @@ def perform_backup():
     except Exception as e:
         return redirect('/error?message=' + str(e))
 
+
 @app.route('/admin/dbutils/begin_restoreDB')
 def restore_select():
     return render_template('restore.html')
 
-@app.route('/admin/dbutils/restoreDB', methods = ['POST', 'GET'])
+
+@app.route('/admin/dbutils/restoreDB', methods=['POST', 'GET'])
 def restore_db():
     return render_template('wait.html', next_route='/admin/dbutils/restoreDB/run')
+
 
 @app.route('/admin/dbutils/restoreDB/run')
 def perform_restore():
     stdout_backup = sys.stdout
     sys.stdout = StringIO()
     try:
-        perform_FULL_restore(active_db,standby_db)
+        perform_FULL_restore(active_db, standby_db)
         output = sys.stdout.getvalue()
         return render_template('restore_report.html', output=output)
     except Exception as e:
         return redirect('/error?message=' + str(e))
 
 
-
-
-
-
-
-
-
-
-
 @app.route('/library_card')
 def library_card():
     return render_template('library_card.html')
+
 
 @app.errorhandler(401)
 def unauthorized_error(error):
@@ -1562,6 +1647,7 @@ def logout():
     session.pop('username', None)
     # Redirect to login page
     return render_template("login.html")
+
 
 @app.route("/")
 def main():
