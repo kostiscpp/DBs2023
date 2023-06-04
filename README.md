@@ -77,7 +77,6 @@ School Library Database (Databases Project - 6th Semester ECE 2023)
 		│   ├── 01.school_library_ddl.sql
 		│   ├── 02.school_library_procs_triggers_events.sql
 		│   ├── 03.school_library_dml.sql
-		│   ├── 04.school_library_query.sql
 		├── frontend
 		│   ├── app.py                (Flask εφαρμογή)
 		│   ├── dbenv.cfg             (παρέμετροι για σύνδεση στην βάση και διαχείριση backups)
