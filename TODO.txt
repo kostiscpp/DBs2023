@@ -1,5 +1,0 @@
-indexes 
-reviews
-holds-checkouts
-multiple categories
-multiple authors
