@@ -267,9 +267,7 @@ call AddBook( '9780552771108','Can You Keep a Secret?','Kinsella, Sophie','Black
 call AddBook( '9780552997034','Down Under','Bryson, Bill','Black Swan','2001','General & Literary Fiction','Down Under, Bill Bryson, Travel, Australia, Humor',1,96,'800.xx',(FLOOR(RAND() * 300)+100));
 call AddBook( '9780099506928','A Spot of Bother','Haddon, Mark','Vintage','2007','General & Literary Fiction','A Spot of Bother, Mark Haddon, Fiction, Family drama, Humor',1,97,'800.xx',(FLOOR(RAND() * 300)+100));
 call AddBook( '9781846053443','Dear Fatty','French, Dawn','Century','2008','Autobiography','Dear Fatty, Dawn French, Memoir, Autobiography, Comedy, Personal anecdotes',1,98,'800.xx',(FLOOR(RAND() * 300)+100));
--- Create random no_pages per book
--- lpad(rand() * 1000000, 1, '0') -- Random 3digits
--- insert to school_id = 2
+
 call AddBook( '9780552772747','Undomestic Goddess','Brown, Dan','Corgi Books','2004','Crime, Thriller & Adventure','Undomestic Goddess, Sophie Kinsella, Chick lit, Humor, Romance',2,1,'800.xx',(FLOOR(RAND() * 300)+100));
 call AddBook( '9780747532743','Harry Potter and the Philosopher''s Stone','Rowling, J. K.','Bloomsbury Publishing PLC','1997','Children''s Fiction','Wizardry, Hogwarts, Friendship, Adventure',2,1,'800.xx',(FLOOR(RAND() * 300)+100));
 call AddBook( '9780747538486','Harry Potter and the Chamber of Secrets','Rowling, J. K.','Bloomsbury Publishing PLC','1999','Children''s Fiction','Wizardry, Hogwarts, Friendship, Adventure',2,1,'800.xx',(FLOOR(RAND() * 300)+100));
@@ -424,7 +422,6 @@ call AddBook( '9780552771108','Can You Keep a Secret?','Kinsella, Sophie','Black
 call AddBook( '9780552997034','Down Under','Bryson, Bill','Black Swan','2001','General & Literary Fiction','Down Under, Bill Bryson, Travel, Australia, Humor',4,96,'800.xx',(FLOOR(RAND() * 300)+100));
 call AddBook( '9780099506928','A Spot of Bother','Haddon, Mark','Vintage','2007','General & Literary Fiction','A Spot of Bother, Mark Haddon, Fiction, Family drama, Humor',4,97,'800.xx',(FLOOR(RAND() * 300)+100));
 call AddBook( '9781846053443','Dear Fatty','French, Dawn','Century','2008','Autobiography','Dear Fatty, Dawn French, Memoir, Autobiography, Comedy, Personal anecdotes',4,98,'800.xx',(FLOOR(RAND() * 300)+100));
--- apo katw einai apo chat gpt tou mariou
 call Addbook('9780140449266', 'Pride and Prejudice', 'Jane Austen', 'Penguin Classics', 1813, 'Fiction, Romance', 'love, society, marriage', 1, 5, '823.7', 400);
 call Addbook('9780061122415', 'To Kill a Mockingbird', 'Harper Lee', 'Harper Perennial Modern Classics', 1960, 'Fiction, Classics', 'race, Harper Lee, Southern Gothic, Social injustice', 2, 3, '813.54', 336);
 call Addbook('9780141439563', 'Great Expectations', 'Charles Dickens', 'Penguin Classics', 1861, 'Fiction, Classics', 'ambition, social class, identity', 1, 4, '823.8', 544);
