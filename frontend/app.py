@@ -2,19 +2,119 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 import pymysql
 import json
 from pymysql import Error
-# from barcode import Code128
-# from barcode.writer import ImageWriter
-# from io import BytesIO
+from io import StringIO
+import sys
+import subprocess
+import time
+import os
+import glob
+import configparser
+import string
+import random
 
 app = Flask(__name__)
 
 app.secret_key = 'your secret key'
 
+
+def set_env():
+    global db_host, db_user, db_user_password, MYSQLDUMP, MYSQL, backups_dir, backups_to_keep, active_db, standby_db
+    # Create a configparser object and read the configuration file
+    config = configparser.ConfigParser()
+    config.read('dbenv.cfg')
+
+    # Access the variables
+    db_host = config.get('dbenv', 'db_host')
+    db_user = config.get('dbenv', 'db_user')
+    db_user_password = config.get('dbenv', 'db_user_password')
+    MYSQLDUMP = config.get('dbenv', 'MYSQLDUMP')
+    MYSQL = config.get('dbenv', 'MYSQL')
+    active_db = config.get('dbenv', 'active_db')
+    standby_db = config.get('dbenv', 'standby_db')
+    backups_dir = config.get('dbenv', 'backups_dir')
+    backups_to_keep = config.get('dbenv', 'backups_to_keep')
+
+def create_directory(directory):
+    try:
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+            print(f"Directory '{directory}' created successfully.")
+        else:
+            print(f"Directory '{directory}' already exists.")
+    except OSError as e:
+        print(f"Error creating directory '{directory}': {str(e)}")
+
+def perform_FULL_backup (source_db):
+#    set_env()
+    create_directory(backups_dir)
+    try:
+        print ("----Η διαδικασία Backup για την βάση δεδομένων " + source_db + " ξεκίνησε : " + time.strftime('%Y%m%d-%H%M%S'))
+        #FULL (SCHEMA+DATA) Backup
+        _source_db = " -u " + db_user + " -p" + db_user_password + " -h " + db_host + " " + source_db
+        _options = " --single-transaction --quick --add-drop-table --add-drop-trigger --events --routines --triggers "
+        _sqlfile = backups_dir + source_db + "_FULL_" + time.strftime('%Y%m%d-%H%M%S') + ".sql"
+        cmd = MYSQLDUMP + _source_db + _options + " --add-drop-database " + " --result-file " + _sqlfile
+        p = subprocess.run(cmd, shell=True, timeout=None, check=True)
+        print ("----Η διαδικασία Backup για την βάση δεδομένων " + source_db + " ολοκληρώθηκε : " + time.strftime('%Y%m%d-%H%M%S'))
+        print ("----Δημιουργήθηκε το SQL backup file " + _sqlfile + " στο " + backups_dir + " directory")
+        print ("----Στο directory " + " " + backups_dir + " διατηρούμε αποθηκεύμενα  τα τελευταία " + backups_to_keep + " files")
+        os.stat(backups_dir)
+        # Get list of all FULL Backup files
+        FILE_pattern = backups_dir + source_db + "*FULL*.sql"
+        files = list(filter(os.path.isfile, glob.glob(FILE_pattern)))
+        # Create a list of files based on modify time
+        files.sort(key=lambda x: os.path.getmtime(x))
+        # Keep only the last backup_to_keep files
+        files_to_keep = files[-int(backups_to_keep):]
+        # Delete the remaining files
+        for file in files:
+           if file not in files_to_keep:
+               os.remove(file)
+    except subprocess.CalledProcessError as e:
+            print("----Exception: Subprocess error occurred. Return code: " + str(e.returncode))
+    except Exception as e:
+            print("----Exception: ActiveDB perform backup failed. " + str(e))
+
+def perform_FULL_restore(source_db,target_db,custom = False):
+#    set_env()
+    # Check if BACKUPS_DIR exists else mkdir
+    try:
+        os.stat(backups_dir)
+        # Get list of all FULL Backup files
+        FILE_pattern = backups_dir + source_db + "*FULL*.sql"
+        files = list(filter(os.path.isfile, glob.glob(FILE_pattern)))
+        # Create a list of files based on modify time
+        files.sort(key=lambda x: os.path.getmtime(x))
+        # Choose the newest file
+        lastfile = files[-1]
+        try:
+            # FULL (SCHEMA+DATA) Restore Started
+            print ("----Η διαδικασία Restore για την εφεδρική (standby) βάση δεδομένων " + target_db )
+            print ("----ξεκίνησε : " + time.strftime('%Y%m%d-%H%M%S'))
+            print ("----Xρησιμοποιώντας το τελευταίο backup file: " + lastfile)
+            print ("----απο την ενεργή (active) βάση δεδομένων " + source_db)
+            _options = " -u " + db_user + " -p" + db_user_password + " -h " + db_host
+            _create_db = " -e \"DROP DATABASE IF EXISTS " + target_db + ";CREATE DATABASE " + target_db + ";SHOW DATABASES \""
+            cmd = MYSQL + _options + _create_db
+            _options = " -u " + db_user + " -p" + db_user_password + " -h " + db_host + " " + target_db
+            cmd = MYSQL + _options + " < " + lastfile
+            p = subprocess.run(cmd, shell=True, timeout=None, check=True)
+            print ("----Η διαδικασία Restore για την εφεδρική (standby) βάση δεδομένων " + target_db)
+            print ("----ολοκληρώθηκε με επιτυχία " + time.strftime('%Y%m%d-%H%M%S') )
+        except subprocess.CalledProcessError as e:
+            print("----Exception: Subprocess error occurred. Return code: " + str(e.returncode))
+        except Exception as e:
+            print("----Exception: StandbyDB restore failed. " + str(e))
+    except Exception as e:
+        print("No backups found...Failed to perform restore" + str(e))
+
+set_env()
+
 conn = pymysql.connect(
-    host='localhost',
-    user='root',
-    password='',
-    db='db1initial',
+    host=db_host,
+    user=db_user,
+    password=db_user_password,
+    db=active_db,
     charset='utf8mb4',
     cursorclass=pymysql.cursors.DictCursor
 )
@@ -90,6 +190,8 @@ def login_user():
     # Show the login form with message (if any)
     return redirect(url_for('main'))
 
+
+
 def checkout_data():
         user_id = session['user_id']
         query = """
@@ -136,6 +238,38 @@ def register():
             error_message = 'This school does not exist!'
 
     return render_template('register.html')
+
+@app.route('/operator_register', methods=['GET', 'POST'])
+def operator_register():
+    if request.method == 'GET':
+        query = """
+            SELECT s.school_id, s.school_name FROM school s WHERE s.school_id > 0;
+        """
+        cursor = conn.cursor()
+        cursor.execute(query)
+        schools = cursor.fetchall()
+        return render_template('operator_register.html', schools = schools)
+    if request.method == 'POST':
+        cursor = conn.cursor()
+        cursor.execute('SELECT special_key FROM school WHERE school_id = %s', (request.form.get('school_id'),))
+        specialKey = cursor.fetchone()['special_key']
+        if specialKey == request.form['special_key']:
+        # Create variables for easy access
+            credentials = [request.form.get(field) for field in ['first_name', 'surname', 'username', 'password', 'birth_date', 'email', 'school_id']]
+        # Check if account exists using MySQL
+            print(credentials)
+            try:
+               cursor.execute('INSERT INTO user (first_name, surname, username, pwd, birth_date, email, role, school_id) VALUES (%s, %s, %s, %s, %s, %s, "operator", %s)', tuple(credentials))
+               conn.commit()
+               cursor.close()
+               return redirect('/user/login')
+            except Exception as e:
+               error_message = 'An error occurred during registration. Please try again.'
+               # Log the error or handle it appropriately
+        else:
+           error_message = 'This school does not exist!'
+
+    return render_template('operator_register.html')
 
 @app.route('/main', methods=['GET', 'POST'])
 def go_to_main():
@@ -192,7 +326,6 @@ def profile_operator():
     cursor.execute(query, (username,))
     user = cursor.fetchone()
     return render_template('profile_operator.html', user=user)
-
 
 @app.route('/user/profile', methods=['GET', 'POST'])
 def profile_user():
@@ -531,6 +664,7 @@ def book_add_review_user(book):
             return redirect(url_for('book_reviews_user', book=book))
 
     return render_template('book_add_review_user.html', book=book)
+
 @app.route('/user/books/checkout/<book_copy_id>', methods=['GET'])
 def user_checkout_request(book_copy_id):
     try:
@@ -569,7 +703,7 @@ def user_checkout_request(book_copy_id):
 def search_users_redirect():
     role = session['role']
     if role == 'admin':
-        return redirect(url_for('/admin/users'))
+        return redirect(url_for('search_users_admin'))
     elif role == 'operator':
         return redirect(url_for('search_users_operator'))
 
@@ -616,6 +750,77 @@ def user_details_operator(user):
     cursor.execute(query, (schoolID, user))
     user_data = cursor.fetchone()
     return render_template('user_details_operator.html', user = user_data)
+
+@app.route('/admin/users', methods=['GET'])
+def search_users_admin():
+    query = " SELECT * from school WHERE school_id > 0;"
+    cursor = conn.cursor()
+    cursor.execute(query)
+    schools = cursor.fetchall()
+    return render_template('catalog_user_admin.html', schools=schools)
+@app.route('/admin/users', methods=['POST'])
+def user_admin_search_result():
+    searchKey = request.form.get('searchKey')
+    print(searchKey)
+    schoolID = request.form['school_id']
+    query = """ 
+    SELECT DISTINCT CONCAT(u.first_name,' ',u.surname) AS full_name, u.username, u.email, u.role
+    FROM user u  
+    WHERE u.school_id = {} AND CONCAT(u.first_name,' ',u.surname) LIKE %s
+    """.format(schoolID)
+    cursor = conn.cursor()
+    cursor.execute(query, ('%' + searchKey + '%',))
+    users = cursor.fetchall()
+    print(users)
+    query = " SELECT * from school WHERE school_id > 0;"
+    cursor.execute(query)
+    schools = cursor.fetchall()
+    return render_template('catalog_user_admin.html', users=users, schools=schools)
+
+
+@app.route('/admin/users/<user>', methods = ['GET'])
+def user_details_admin(user):
+    query = """
+    SELECT u.*, s.school_name FROM user u JOIN school s ON s.school_id = u.school_id WHERE u.username = %s
+    """
+    cursor = conn.cursor()
+    cursor.execute(query,(user,))
+    user = cursor.fetchone()
+    return render_template('user_details_admin.html', user=user)
+
+
+@app.route('/update_user_details', methods=['POST'])
+def update_user_details():
+    birth_date = request.form['birth_date']
+    email = request.form['email']
+    profile = request.form['profile']
+    username = request.form['username']
+    barcode = request.form['barcode']
+
+    # Connect to the MySQL database
+    cursor = conn.cursor()
+
+    # Prepare the SQL statement to update the user's birth date and school
+    update_query = "UPDATE `user` SET `birth_date` = %s, `email` = %s, `profile` = %s, `username` = %s WHERE `barcode` = %s"
+    # Execute the update query
+    cursor.execute(update_query, (birth_date, email, profile, username,barcode,))
+
+    # Commit the changes to the database
+    conn.commit()
+    cursor.close
+    cursor = conn.cursor()
+    query = "SELECT * FROM `user` WHERE `barcode` = %s"
+    cursor.execute(query, (barcode,))
+    user = cursor.fetchone()
+
+    flash('Οι αλλαγές αποθηκεύθηκαν', 'success')
+
+
+    role = session['role']
+    if role == 'admin':
+        return redirect(url_for('user_details_admin', user=user['username']))
+    elif role == 'operator':
+        return redirect(url_for('user_details_operator', user=user['username']))
 
 @app.route('/update_profile', methods=['POST'])
 def update_profile():
@@ -738,6 +943,66 @@ def register_monitoring_redirect():
     elif role == 'admin':
         return redirect(url_for('register_monitoring_admin'))
 
+
+@app.route('/register_op_admin_redirect', methods = ['GET','POST'])
+def register_op_redirect():
+    return redirect(url_for('register_op_monitoring_admin'))
+
+@app.route('/admin/register_op_monitoring', methods=['GET','POST'])
+def register_op_monitoring_admin():
+    query = """
+        SELECT u.*  FROM user u WHERE u.role = 'operator' AND u.status = 'pending';
+    """
+    cursor = conn.cursor()
+    cursor.execute(query)
+    operators = cursor.fetchall()
+    return render_template('register_op_monitoring.html', operators=operators)
+
+@app.route('/admin/update_op_register_status', methods=['POST'])
+def update_register_status_admin():
+    user_id = request.form.get('user_id')
+    first_name = request.form['first_name']
+    surname = request.form['surname']
+    school_id = request.form['school_id']
+    update_query = "UPDATE user SET status = 'active', barcode = LPAD(FLOOR(RAND() * 999999) + 1, 8, '0') WHERE user_id = %s;"
+    cursor = conn.cursor()
+    cursor.execute(update_query, (user_id,))
+    update_query = "UPDATE school SET operator_name = CONCAT(%s,' ',%s) WHERE school_id = %s;"
+    cursor.execute(update_query, (first_name, surname,school_id))
+    conn.commit()
+    cursor.close()
+    return redirect('/admin/register_op_monitoring')
+
+@app.route('/school_list_admin_redirect', methods = ['GET','POST'])
+def school_list_redirect():
+    return redirect(url_for('school_list_admin'))
+
+@app.route('/admin/school_list', methods = ['POST', 'GET'])
+def school_list_admin():
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM school;")
+    schools = cursor.fetchall()
+    return render_template('school_list.html', schools=schools)
+
+@app.route('/admin/register_school', methods=['GET','POST'])
+def register_school_admin():
+    if request.method == 'POST':
+        # Create variables for easy access'
+        credentials = [request.form.get(field) for field in ['school_name', 'address', 'city', 'phone', 'email', 'principal_name']]
+        print(credentials)
+        # Check if account exists using MySQL
+        cursor = conn.cursor()
+        query = """INSERT INTO 
+        school(school_name, address, city, phone_number, email, principal_name, operator_name, special_key) 
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"""
+        specialKey = ''.join(random.choice(string.ascii_letters + string.digits + string.punctuation) for _ in range(16))
+        cursor.execute(query, tuple(credentials + ['', specialKey]))
+        conn.commit()
+        cursor.close()
+        return redirect(url_for('school_list_admin'))
+    return render_template('register_school.html')
+
+
 @app.route('/operator/registers/register_monitoring', methods=['GET','POST'])
 def register_monitoring_operator():
     schoolID = session['school_id']
@@ -821,8 +1086,6 @@ def return_book_admin():
         return "Barcode is missing in the form data"
     barcode = request.form['barcode']
     schoolID = session['school_id']
-    print(barcode)
-    print(schoolID)
     query = """
         SELECT c.checkout_time AS time, c.checkout_status AS status, vsu.user_id, 
             CONCAT(vsu.first_name,' ', vsu.surname) AS name, vsu.barcode, vs.title, vs.copy_id
@@ -977,6 +1240,62 @@ def update_review_status_operator():
     cursor.close()
     return redirect('/operator/pending_reviews')
 
+@app.route('/admin/analytics/query311')
+def query311_redirect():
+    return redirect(url_for('query311'))
+
+@app.route('/admin/analytics/total_checkouts_per_school', methods=['GET','POST'])
+def query311():
+    time_unit = request.form.get('time_unit')
+    ch_attribute = request.form.get('ch_attribute')
+    time = request.form.get('time')
+    checkouts = {}
+    if time and ch_attribute and time_unit:
+        query = """
+            SELECT COUNT(*) AS total_checkouts, s.school_name
+            FROM checkout c
+            JOIN book_copy bc ON c.book_copy_id = bc.copy_id
+            JOIN school s ON bc.school_id = s.school_id
+            WHERE """ + time_unit +"(c."+ ch_attribute +")" + """= %s
+            GROUP BY s.school_id;
+        """
+        cursor = conn.cursor()
+        cursor.execute(query, (time,))
+        checkouts = cursor.fetchall()
+    return render_template('query311.html', checkouts=checkouts)
+
+
+@app.route('/admin/analytics/query312')
+def query312_redirect():
+    return redirect(url_for('query312'))
+
+@app.route('/admin/analytics/author_and_teacher-fans', methods=['GET','POST'])
+def query312():
+    category = request.form.get('category')
+    authors = {}
+    teachers = {}
+    if category:
+        query = """SELECT DISTINCT a.name AS author_name
+                    FROM author a
+                    JOIN book_to_author b2a ON b2a.author_id = a.author_id
+                    JOIN book b ON b.ISBN = b2a.ISBN
+                    JOIN book_to_category b2c ON b2c.ISBN = b.ISBN
+                    JOIN category cat ON cat.category_id = b2c.category_id
+                    WHERE cat.name = %s;"""
+        cursor = conn.cursor()
+        cursor.execute(query, (category,))
+        authors = cursor.fetchall()
+        query = """ SELECT DISTINCT CONCAT(u.first_name, ' ', u.surname) AS teacher
+                        FROM user u 
+                        JOIN checkout c ON c.user_id = u.user_id
+                        JOIN book_copy bc ON bc.copy_id = c.book_copy_id 
+                        JOIN book b ON b.ISBN = bc.book_id
+                        JOIN book_to_category b2c ON b2c.ISBN = b.ISBN
+                        JOIN category cat ON cat.category_id = b2c.category_id
+                        WHERE u.role = 'teacher' AND YEAR(c.checkout_time) = YEAR(NOW()) AND cat.name = %s"""
+        cursor.execute(query, (category,))
+        teachers = cursor.fetchall()
+    return render_template('query312.html', authors=authors, teachers=teachers)
 
 
 @app.route('/admin/analytics/query313')
@@ -1098,10 +1417,10 @@ def query317_redirect():
 @app.route('/admin/analytics/unsuccessful_authors', methods=['GET','POST'])
 def query317():
     query = """
-        SELECT a.author_id, a.name, COUNT(*) AS book_count, SUM(vs.book_copies_number) AS total_copies
+        SELECT a.author_id, a.name, COUNT(*) AS book_count
         FROM book_to_author bta
         JOIN author a ON bta.author_id = a.author_id
-        JOIN view_school vs ON bta.isbn = vs.isbn
+        JOIN book b ON bta.isbn = b.isbn
         GROUP BY a.author_id, a.name
         HAVING COUNT(*) <= (SELECT MAX(book_count) - 5
                 FROM (SELECT COUNT(*) AS book_count
@@ -1168,32 +1487,57 @@ def review_analysis_operator():
     users2 = cursor.fetchall()
     return render_template('review_analysis_operator.html', users1=users1, users2 = users2)
 
+@app.route('/admin/dbutils/swoverinfo')
+def switchoverinfo():
+    return render_template('swoverinfo.html')
+
+@app.route('/admin/dbutils/begin_backupDB')
+def backup_select():
+    return render_template('backup.html')
+
+@app.route('/admin/dbutils/backupDB')
+def perform_backup():
+    stdout_backup = sys.stdout
+    sys.stdout = StringIO()
+    try:
+        perform_FULL_backup(active_db)
+        output = sys.stdout.getvalue()
+        return render_template('backup_report.html', output=output)
+    except Exception as e:
+        return redirect('/error?message=' + str(e))
+
+@app.route('/admin/dbutils/begin_restoreDB')
+def restore_select():
+    return render_template('restore.html')
+
+@app.route('/admin/dbutils/restoreDB', methods = ['POST', 'GET'])
+def restore_db():
+    return render_template('wait.html', next_route='/admin/dbutils/restoreDB/run')
+
+@app.route('/admin/dbutils/restoreDB/run')
+def perform_restore():
+    stdout_backup = sys.stdout
+    sys.stdout = StringIO()
+    try:
+        perform_FULL_restore(active_db,standby_db)
+        output = sys.stdout.getvalue()
+        return render_template('restore_report.html', output=output)
+    except Exception as e:
+        return redirect('/error?message=' + str(e))
+
+
+
+
+
+
+
+
+
+
+
 @app.route('/library_card')
 def library_card():
-    user = {
-        'name': 'John Doe',
-        'libraryId': '123456',
-        'email': 'john.doe@example.com',
-        'address': '123 Main St, City, Country',
-        'barcode': '12345678'
-    }
-    barcode_value = '12345678'  # Replace with your barcode value
-
-    # # Generate the barcode image using Code128 format
-    # barcode = Code128(barcode_value, writer=ImageWriter())
-    #
-    # # Create an in-memory buffer to hold the image
-    # barcode = Code128(barcode_value, writer=ImageWriter())
-    #
-    # # Create an in-memory buffer to hold the image
-    # buffer = BytesIO()
-    # barcode.write(buffer)
-    # buffer.seek(0)
-    #
-    # # Convert the image to base64 encoding
-    # barcode_image_base64 = base64.b64encode(buffer.read()).decode('utf-8')
-
-    return render_template('dummy-search.html', user=user)
+    return render_template('library_card.html')
 
 @app.errorhandler(401)
 def unauthorized_error(error):
